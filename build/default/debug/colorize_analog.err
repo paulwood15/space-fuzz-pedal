@@ -1,0 +1,14 @@
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\COLORIZE_ANALOG.ASM 75 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\COLORIZE_ANALOG.ASM 79 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\UTILMACROS.INC 4 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\UTILMACROS.INC 4 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\COLORIZE_ANALOG.ASM 88 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\COLORIZE_ANALOG.ASM 104 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\COLORIZE_ANALOG.ASM 106 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\COLORIZE_ANALOG.ASM 160 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\COLORIZE_ANALOG.ASM 167 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\COLORIZE_ANALOG.ASM 174 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\UTILMACROS.INC 13 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\UTILMACROS.INC 13 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\COLORIZE_ANALOG.ASM 177 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\COLORIZE_ANALOG.ASM 178 : Register in operand not in bank 0.  Ensure that bank bits are correct.

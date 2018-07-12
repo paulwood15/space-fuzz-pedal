@@ -1,15 +1,15 @@
 MPLINK 5.08, LINKER
-Linker Map File - Created Thu Jul 12 14:38:10 2018
+Linker Map File - Created Thu Jul 12 17:51:30 2018
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
                 ---------  ---------  ---------  ---------  ---------
                  RES_VECT       code   0x000000    program   0x000004
            INTERRUPT_VECT       code   0x000004    program   0x000004
-                    .code       code   0x001800    program   0x00001e
-                   .cinit    romdata   0x00180f    program   0x000004
-                    WRITE       code   0x001811    program   0x000408
-                MAIN_PROG       code   0x001a15    program   0x0000b8
+                    .code       code   0x001800    program   0x000150
+                   .cinit    romdata   0x0018a8    program   0x000004
+                    WRITE       code   0x0018aa    program   0x000408
+                MAIN_PROG       code   0x001aae    program   0x0000b2
 .config_8007_BUILD/DEFAULT/PRODUCTION/_EXT/73       code   0x008007    program   0x000002
 .config_8008_BUILD/DEFAULT/PRODUCTION/_EXT/73       code   0x008008    program   0x000002
 .config_8009_BUILD/DEFAULT/PRODUCTION/_EXT/73       code   0x008009    program   0x000002
@@ -26,74 +26,83 @@ Linker Map File - Created Thu Jul 12 14:38:10 2018
                            ---------   ---------      
                             0x000000    0x000001      
                             0x000004    0x000005      
-                            0x001800    0x001a70      
+                            0x001800    0x001b06      
                             0x008007    0x008009      
-            632 out of 8200 program addresses used, program memory utilization is 7%
+            782 out of 8200 program addresses used, program memory utilization is 9%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                DO_RENDER   0x00180e    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      ACQ   0x00181e    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                DO_RENDER   0x0018a2    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                END_TEST1   0x00183f    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                END_TEST2   0x001855    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+            END_TRGR_TEST   0x00189f    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
            EXTERN_INITIAL   0x001800    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-    EXTERN_INTERRUPT_SERV   0x00180d    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                  INITIAL   0x001a15    program     static ..\ws2813-firmware\WS2813.asm
-           INTERRUPT_SERV   0x001a3d    program     static ..\ws2813-firmware\WS2813.asm
-              RENDER_LOOP   0x001a60    program     static ..\ws2813-firmware\WS2813.asm
-                    START   0x001a55    program     static ..\ws2813-firmware\WS2813.asm
-              WRITE_FRAME   0x001811    program     static ..\ws2813-firmware\WS2813.asm
-                WRITE_LED   0x001815    program     static ..\ws2813-firmware\WS2813.asm
-             WS2813_WRITE   0x001819    program     static ..\ws2813-firmware\WS2813.asm
-          _MAIN_PROG_0058   0x001a6d    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0009   0x00181a    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0013   0x001824    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_001E   0x00182f    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0028   0x001839    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0033   0x001844    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_003D   0x00184e    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0048   0x001859    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0052   0x001863    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_005D   0x00186e    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0067   0x001878    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0072   0x001883    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_007C   0x00188d    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0087   0x001898    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0091   0x0018a2    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_009C   0x0018ad    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00A6   0x0018b7    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00B2   0x0018c3    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00BC   0x0018cd    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00C7   0x0018d8    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00D1   0x0018e2    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00DC   0x0018ed    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00E6   0x0018f7    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00F1   0x001902    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00FB   0x00190c    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0106   0x001917    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0110   0x001921    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_011B   0x00192c    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0125   0x001936    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0130   0x001941    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_013A   0x00194b    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0145   0x001956    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_014F   0x001960    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_015B   0x00196c    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0165   0x001976    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0170   0x001981    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_017A   0x00198b    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0185   0x001996    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_018F   0x0019a0    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_019A   0x0019ab    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01A4   0x0019b5    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01AF   0x0019c0    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01B9   0x0019ca    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01C4   0x0019d5    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01CE   0x0019df    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01D9   0x0019ea    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01E3   0x0019f4    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01EE   0x0019ff    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01F8   0x001a09    program     static ..\ws2813-firmware\WS2813.asm
+    EXTERN_INTERRUPT_SERV   0x001822    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               FIRST_TRGR   0x00185b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                  INITIAL   0x001aae    program     static ..\ws2813-firmware\WS2813.asm
+           INTERRUPT_SERV   0x001ad5    program     static ..\ws2813-firmware\WS2813.asm
+            MOV_WDATA_MIN   0x0018a3    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              RENDER_LOOP   0x001af6    program     static ..\ws2813-firmware\WS2813.asm
+              SECOND_TRGR   0x00187a    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                 SET_PEAK   0x001851    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               SET_TROUGH   0x00183b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                    START   0x001ae9    program     static ..\ws2813-firmware\WS2813.asm
+              WRITE_FRAME   0x0018aa    program     static ..\ws2813-firmware\WS2813.asm
+                WRITE_LED   0x0018ae    program     static ..\ws2813-firmware\WS2813.asm
+             WS2813_WRITE   0x0018b2    program     static ..\ws2813-firmware\WS2813.asm
+          _MAIN_PROG_0055   0x001b03    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0009   0x0018b3    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0013   0x0018bd    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_001E   0x0018c8    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0028   0x0018d2    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0033   0x0018dd    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_003D   0x0018e7    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0048   0x0018f2    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0052   0x0018fc    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_005D   0x001907    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0067   0x001911    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0072   0x00191c    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_007C   0x001926    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0087   0x001931    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0091   0x00193b    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_009C   0x001946    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00A6   0x001950    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00B2   0x00195c    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00BC   0x001966    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00C7   0x001971    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00D1   0x00197b    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00DC   0x001986    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00E6   0x001990    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00F1   0x00199b    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00FB   0x0019a5    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0106   0x0019b0    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0110   0x0019ba    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_011B   0x0019c5    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0125   0x0019cf    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0130   0x0019da    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_013A   0x0019e4    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0145   0x0019ef    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_014F   0x0019f9    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_015B   0x001a05    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0165   0x001a0f    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0170   0x001a1a    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_017A   0x001a24    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0185   0x001a2f    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_018F   0x001a39    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_019A   0x001a44    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01A4   0x001a4e    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01AF   0x001a59    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01B9   0x001a63    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01C4   0x001a6e    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01CE   0x001a78    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01D9   0x001a83    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01E3   0x001a8d    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01EE   0x001a98    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01F8   0x001aa2    program     static ..\ws2813-firmware\WS2813.asm
                      AMPL   0x000022       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                   BUFFERH   0x0002a0       data     static ..\ws2813-firmware\WS2813.asm
                   BUFFERL   0x0001a0       data     static ..\ws2813-firmware\WS2813.asm
@@ -118,64 +127,73 @@ Linker Map File - Created Thu Jul 12 14:38:10 2018
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
            EXTERN_INITIAL   0x001800    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-    EXTERN_INTERRUPT_SERV   0x00180d    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                DO_RENDER   0x00180e    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-              WRITE_FRAME   0x001811    program     static ..\ws2813-firmware\WS2813.asm
-                WRITE_LED   0x001815    program     static ..\ws2813-firmware\WS2813.asm
-             WS2813_WRITE   0x001819    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0009   0x00181a    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0013   0x001824    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_001E   0x00182f    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0028   0x001839    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0033   0x001844    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_003D   0x00184e    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0048   0x001859    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0052   0x001863    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_005D   0x00186e    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0067   0x001878    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0072   0x001883    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_007C   0x00188d    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0087   0x001898    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0091   0x0018a2    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_009C   0x0018ad    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00A6   0x0018b7    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00B2   0x0018c3    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00BC   0x0018cd    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00C7   0x0018d8    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00D1   0x0018e2    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00DC   0x0018ed    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00E6   0x0018f7    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00F1   0x001902    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00FB   0x00190c    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0106   0x001917    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0110   0x001921    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_011B   0x00192c    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0125   0x001936    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0130   0x001941    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_013A   0x00194b    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0145   0x001956    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_014F   0x001960    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_015B   0x00196c    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0165   0x001976    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0170   0x001981    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_017A   0x00198b    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0185   0x001996    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_018F   0x0019a0    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_019A   0x0019ab    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01A4   0x0019b5    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01AF   0x0019c0    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01B9   0x0019ca    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01C4   0x0019d5    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01CE   0x0019df    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01D9   0x0019ea    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01E3   0x0019f4    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01EE   0x0019ff    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01F8   0x001a09    program     static ..\ws2813-firmware\WS2813.asm
-                  INITIAL   0x001a15    program     static ..\ws2813-firmware\WS2813.asm
-           INTERRUPT_SERV   0x001a3d    program     static ..\ws2813-firmware\WS2813.asm
-                    START   0x001a55    program     static ..\ws2813-firmware\WS2813.asm
-              RENDER_LOOP   0x001a60    program     static ..\ws2813-firmware\WS2813.asm
-          _MAIN_PROG_0058   0x001a6d    program     static ..\ws2813-firmware\WS2813.asm
+                      ACQ   0x00181e    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+    EXTERN_INTERRUPT_SERV   0x001822    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               SET_TROUGH   0x00183b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                END_TEST1   0x00183f    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                 SET_PEAK   0x001851    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                END_TEST2   0x001855    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               FIRST_TRGR   0x00185b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              SECOND_TRGR   0x00187a    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+            END_TRGR_TEST   0x00189f    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                DO_RENDER   0x0018a2    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+            MOV_WDATA_MIN   0x0018a3    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              WRITE_FRAME   0x0018aa    program     static ..\ws2813-firmware\WS2813.asm
+                WRITE_LED   0x0018ae    program     static ..\ws2813-firmware\WS2813.asm
+             WS2813_WRITE   0x0018b2    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0009   0x0018b3    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0013   0x0018bd    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_001E   0x0018c8    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0028   0x0018d2    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0033   0x0018dd    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_003D   0x0018e7    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0048   0x0018f2    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0052   0x0018fc    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_005D   0x001907    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0067   0x001911    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0072   0x00191c    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_007C   0x001926    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0087   0x001931    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0091   0x00193b    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_009C   0x001946    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00A6   0x001950    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00B2   0x00195c    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00BC   0x001966    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00C7   0x001971    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00D1   0x00197b    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00DC   0x001986    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00E6   0x001990    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00F1   0x00199b    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00FB   0x0019a5    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0106   0x0019b0    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0110   0x0019ba    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_011B   0x0019c5    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0125   0x0019cf    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0130   0x0019da    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_013A   0x0019e4    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0145   0x0019ef    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_014F   0x0019f9    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_015B   0x001a05    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0165   0x001a0f    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0170   0x001a1a    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_017A   0x001a24    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0185   0x001a2f    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_018F   0x001a39    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_019A   0x001a44    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01A4   0x001a4e    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01AF   0x001a59    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01B9   0x001a63    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01C4   0x001a6e    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01CE   0x001a78    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01D9   0x001a83    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01E3   0x001a8d    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01EE   0x001a98    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01F8   0x001aa2    program     static ..\ws2813-firmware\WS2813.asm
+                  INITIAL   0x001aae    program     static ..\ws2813-firmware\WS2813.asm
+           INTERRUPT_SERV   0x001ad5    program     static ..\ws2813-firmware\WS2813.asm
+                    START   0x001ae9    program     static ..\ws2813-firmware\WS2813.asm
+              RENDER_LOOP   0x001af6    program     static ..\ws2813-firmware\WS2813.asm
+          _MAIN_PROG_0055   0x001b03    program     static ..\ws2813-firmware\WS2813.asm
                     WDATA   0x000020       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                      AMPL   0x000022       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                   MIN_WAV   0x000024       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
