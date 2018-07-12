@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=
+SOURCEFILES_QUOTED_IF_SPACED=../ws2813-firmware/WS2813.asm colorize_analog.asm
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=
-POSSIBLE_DEPFILES=
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/_ext/739432619/WS2813.o ${OBJECTDIR}/colorize_analog.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/_ext/739432619/WS2813.o.d ${OBJECTDIR}/colorize_analog.o.d
 
 # Object Files
-OBJECTFILES=
+OBJECTFILES=${OBJECTDIR}/_ext/739432619/WS2813.o ${OBJECTDIR}/colorize_analog.o
 
 # Source Files
-SOURCEFILES=
+SOURCEFILES=../ws2813-firmware/WS2813.asm colorize_analog.asm
 
 
 CFLAGS=
@@ -94,7 +94,39 @@ MP_LINKER_DEBUG_OPTION=
 # ------------------------------------------------------------------------------------
 # Rules for buildStep: assemble
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
+${OBJECTDIR}/_ext/739432619/WS2813.o: ../ws2813-firmware/WS2813.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/_ext/739432619" 
+	@${RM} ${OBJECTDIR}/_ext/739432619/WS2813.o.d 
+	@${RM} ${OBJECTDIR}/_ext/739432619/WS2813.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/_ext/739432619/WS2813.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_PK3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/_ext/739432619/WS2813.lst\" -e\"${OBJECTDIR}/_ext/739432619/WS2813.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/_ext/739432619/WS2813.o\" \"../ws2813-firmware/WS2813.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/_ext/739432619/WS2813.o"
+	@${FIXDEPS} "${OBJECTDIR}/_ext/739432619/WS2813.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+${OBJECTDIR}/colorize_analog.o: colorize_analog.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/colorize_analog.o.d 
+	@${RM} ${OBJECTDIR}/colorize_analog.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/colorize_analog.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_PK3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/colorize_analog.lst\" -e\"${OBJECTDIR}/colorize_analog.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/colorize_analog.o\" \"colorize_analog.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/colorize_analog.o"
+	@${FIXDEPS} "${OBJECTDIR}/colorize_analog.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
 else
+${OBJECTDIR}/_ext/739432619/WS2813.o: ../ws2813-firmware/WS2813.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/_ext/739432619" 
+	@${RM} ${OBJECTDIR}/_ext/739432619/WS2813.o.d 
+	@${RM} ${OBJECTDIR}/_ext/739432619/WS2813.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/_ext/739432619/WS2813.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/_ext/739432619/WS2813.lst\" -e\"${OBJECTDIR}/_ext/739432619/WS2813.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/_ext/739432619/WS2813.o\" \"../ws2813-firmware/WS2813.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/_ext/739432619/WS2813.o"
+	@${FIXDEPS} "${OBJECTDIR}/_ext/739432619/WS2813.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+${OBJECTDIR}/colorize_analog.o: colorize_analog.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/colorize_analog.o.d 
+	@${RM} ${OBJECTDIR}/colorize_analog.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/colorize_analog.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/colorize_analog.lst\" -e\"${OBJECTDIR}/colorize_analog.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/colorize_analog.o\" \"colorize_analog.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/colorize_analog.o"
+	@${FIXDEPS} "${OBJECTDIR}/colorize_analog.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
 endif
 
 # ------------------------------------------------------------------------------------
