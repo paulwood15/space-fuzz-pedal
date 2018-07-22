@@ -51,6 +51,13 @@ WITHIN_WINDOW	MACRO	D	    ; sets C flag of STATUS register
     #DEFINE ADC_ANSEL	ANSA4
     #DEFINE TRIGGER_OFF	0x3F	    ; 10bit resolution  [0V, 5V] corresponds to [0x000, 0x3FF]
 				    ; TRIGGER_OFF = 0.5V -> 5V / 10 -> 0x3FF / 10
+    #define MIN_FOUND	0
+    #define MAX_FOUND	1
+    #define POS_SLOPE	2
+    #define NEG_SLOPE	3
+    #define ALLOW_TRGR2	4  
+    #define AMPL_MASK	b'00000011'
+    #define SLOPE_MASK	b'00001100'
     
     UDATA   0x20
 ;TEMP REGISTERS
@@ -58,13 +65,17 @@ TEMP8	RES 1
 TEMP16	RES 2
     
     
-;ADC REGISTER
+;DATA AND STATUS REGISTERS
 WDATA	RES 2		    ; copied data from ADC read
+PDATA	RES 2		    ; last read 
+SIGNAL	RES 1		    ; bit 0: MIN_WAV found
+			    ; bit 1: MAX_WAVE found
+			    ; bit 4: allow trigger 2
     
 ;AMPLITUDE REGISTERS
-AMPL_WAV    RES 2	    ; calculated amplitude 
-MIN_WAV	RES 2		    ; wave trough
-MAX_WAV	RES 2		    ; wave peak
+AMPLITUDE   RES 2	    ; calculated amplitude 
+MIN_WAV	    RES 2	    ; wave trough
+MAX_WAV	    RES 2	    ; wave peak
 	
 ;FREQUENCY REGISTERS
 DELTA_T	RES 2				    ; change in timer3 ticks from 2 tiggered plots
@@ -150,10 +161,10 @@ EXTERN_INITIAL:
 ;			    EXTERN_INTERRUPT_SERV
 ;*******************************************************************************
 EXTERN_INTERRUPT_SERV:
-;    BANKSEL ADRESH
-;    CPYFF   ADRESH, WDATA		; copy high adc result to high wdata
-;    BANKSEL ADRESL
-;    CPYFF   ADRESL, WDATA+1		; copy low adc result to high wdata
+    BANKSEL ADRESH
+    CPYFF   ADRESH, WDATA		; copy high adc result to high wdata
+    BANKSEL ADRESL
+    CPYFF   ADRESL, WDATA+1		; copy low adc result to high wdata
     
     ; !!!! WITHIN_TRIGGER unit tests !!!!
 ;    BANKSEL T3CON
@@ -167,7 +178,7 @@ EXTERN_INTERRUPT_SERV:
 ;    INIT16  WDATA, 0x1B0	; 0x1FF +- 4F	    |	no
 ;    INIT16  WDATA, 0x3FF	; 0x3FF		    |	no
 ;    INIT16  WDATA, 0x000	; 0x000		    |	no
-    INIT16  WDATA, 0x1FF	; 0x1FF		    |	yes
+;    INIT16  WDATA, 0x1FF	; 0x1FF		    |	yes
    
 ;TEST FOR NEW WAVE TROUGH
     BANKSEL MIN_WAV
@@ -178,6 +189,8 @@ EXTERN_INTERRUPT_SERV:
     GOTO    END_TEST1
 SET_TROUGH:
     MOV16   WDATA, MIN_WAV		; set new MIN_WAV to new WDATA
+    BANKSEL SIGNAL
+    BSF	    SIGNAL, MIN_FOUND
 END_TEST1:
     
 ;TEST FOR NEW WAVE PEAK
@@ -189,8 +202,26 @@ END_TEST1:
     GOTO    END_TEST2
 SET_PEAK:
     MOV16   WDATA, MAX_WAV		; set new MAX_WAV to new WDATA
+    BANKSEL SIGNAL
+    BSF	    SIGNAL, MAX_FOUND
 END_TEST2:
      
+
+SLOPE_TEST:
+;TEST FOR POSITIVE OR NEGATIVE SLOPES
+    CMP16   WDATA, PDATA		; compare WDATA and PDATA to see the rate of change 
+    BTFSS   STATUS, C			; 
+     BSF    SIGNAL, NEG_SLOPE
+    BTFSC   SIGNAL, C
+     BSF    SIGNAL, POS_SLOPE
+    MOVF    SIGNAL, W
+    ANDLW   SLOPE_MASK
+    SUBLW   SLOPE_MASK
+    BTFSS   STATUS, Z
+     GOTO   TRIGGER_WINDOW_TEST
+    BSF	    SIGNAL, ALLOW_TRGR2
+     
+TRIGGER_WINDOW_TEST: 
 ;TEST IF WITHIN TRIGGER WINDOW
     BANKSEL T3CON
     CLRSTAT				; clear Z and C  flags
@@ -199,30 +230,22 @@ END_TEST2:
     GOTO    SECOND_TRGR
 FIRST_TRGR:				; if first trigger, start timer3 to measure cycles between triggers
     BANKSEL WDATA
-    CLRSTAT				; clear Z and C flags
-    CMP16   TGRL, WDATA			; test if above lower trigger - C will be clear
-    BTFSC   STATUS, C			; exits macro if C set = not above TGRL
-    GOTO    $+6
-    CMP16   TGRH, WDATA     		; will set c if below TGRH
-    ;WITHIN_WINDOW  WDATA		; C will be set if within trigger window
+    WITHIN_WINDOW  WDATA		; C will be set if within trigger window
     BANKSEL T3CON
     BTFSC   STATUS, C
     BSF	    T3CON, TMR3ON		; start timer3 if within trigger window
     GOTO    END_TRGR_TEST		; end trigger window test
 SECOND_TRGR:
     BANKSEL WDATA
-    CLRSTAT				; clear Z and C flags
-    CMP16   TGRL, WDATA			; test if above lower trigger - C will be clear
-    BTFSC   STATUS, C			; exits macro if C set = not above TGRL
-    GOTO    $+6
-    CMP16   TGRH, WDATA     		; will set c if below TGRH
-    ;WITHIN_WINDOW  WDATA		; C will be set if within trigger window
+    WITHIN_WINDOW  WDATA		; C will be set if within trigger window
+    BTFSS   SIGNAL, ALLOW_TRGR2
+     GOTO   END_TRGR_TEST
     BANKSEL T3CON
     BTFSS   STATUS, C			; end test if not within window
     GOTO    END_TRGR_TEST		; end trigger window test
     BCF	    T3CON, TMR3ON		; turn off timer3
-    CPYFF   TMR3H, DELTA_T		; copy timer3 data to DELAT_T
-    CPYFF   TMR3L, DELTA_T+1
+    CPYFF   TMR3H, DELTA_T+1		; copy timer3 data to DELAT_T
+    CPYFF   TMR3L, DELTA_T
     CLRF    TMR3L			; clear timer3
     CLRF    TMR3H   
 END_TRGR_TEST:
@@ -230,6 +253,9 @@ END_TRGR_TEST:
 ;CLEANUP
     BANKSEL PIR1
     BCF	    PIR1, ADIF			; clear ADC interrupt flag
+    MOV16   WDATA, PDATA		; copy data to past data register 
+    
+    ; TODO: ADC cleanup and start next reading.
     
     RETURN
     
@@ -243,6 +269,22 @@ END_TRGR_TEST:
 DO_RENDER:
     PAGESEL SET_WRGB
     CALL    SET_WRGB
+    
+    CALC_AMPLITUDE:
+;TEST WHETHER A MAX AND MIN HAS BEEN FOUND 
+    BCF	    STATUS, Z			; clear Z flag of STATUS register
+    MOVF    SIGNAL, W			; move SIGNAL status register to WREG
+    ANDLW   AMPL_MASK			; mask SIGNAL for data about the wave's amplitude
+    SUBLW   AMPL_MASK			; if a max and min has been found, both bits will be set and will be 
+    BTFSS   STATUS, Z			; equal to the mask and will cause the Z flag to be set upon subtraction
+     GOTO    TRIGGER_WINDOW_TEST	; min and max weren't found
+    MOV16   MAX_WAV, AMPLITUDE
+    SUB16   AMPLITUDE, MIN_WAV		; MAX_WAV - MIN_WAV
+    RSF16   AMPLITUDE, 1		; divide by 2
+    BANKSEL SIGNAL
+    MOVLF   SIGNAL, b'00000100'		; clear MIN_FOUND and MAX_FOUND 
+    
+    
     
     RETURN
     

@@ -121,11 +121,15 @@ LSL16   MACRO   VAR16
 ;
 ;
 SUB16   MACRO   DST, SRC
-        MOVF    SRC,W         ; Get low byte of subtrahend
-        SUBWF   DST,F         ; Subtract DST(low) - SRC(low)
+        BANKSEL	SRC
+	MOVF    SRC,W         ; Get low byte of subtrahend
+        BANKSEL	DST
+	SUBWF   DST,F         ; Subtract DST(low) - SRC(low)
+	BANKSEL	SRC
         MOVF    SRC+1,W       ; Now get high byte of subtrahend
         BTFSS   STATUS,C        ; If there was a borrow, rather than
         INCF    SRC+1,W       ; decrement high byte of dst we inc src
+	BANKSEL	DST
         SUBWF   DST+1,F       ; Subtract the high byte and we're done
 	ENDM
         
