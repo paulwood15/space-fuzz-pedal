@@ -1,19 +1,44 @@
+#include UtilRoutines.inc
+#include p16f1615.inc
+	
+	
 MOVLF	MACRO	DEST, LIT
 	BANKSEL	DEST
 	MOVLW	LIT
 	MOVWF	DEST
 	ENDM
 	
-BCCZ	MACRO	 
-	BCF	    STATUS, Z
-	BCF	    STATUS, C
+CLRSTAT	MACRO	 
+	BCF	STATUS, Z
+	BCF	STATUS, C
+	BCF	STATUS, DC
 	ENDM
 	
 CPYFF	MACRO	FROM,TO
+	BANKSEL	FROM
 	MOVF	FROM, W
+	BANKSEL	TO
 	MOVWF	TO
 	ENDM
 
+RSF16	MACRO	NUM, NUMBITS
+	MOV16	NUM, SHIFTNUM
+	BANKSEL	NUMBITS
+	MOVFW	NUMBITS
+	PAGESEL	RSHIFT16
+	CALL	RSHIFT16
+	MOV16	SHIFTNUM, NUM
+	ENDM
+	
+LSF16	MACRO	NUM, NUMBITS
+	MOV16	NUM, SHIFTNUM
+	BANKSEL	NUMBITS
+	MOVFW	NUMBITS
+	PAGESEL	LSHIFT16
+	CALL	LSHIFT16
+	MOV16	SHIFTNUM, NUM
+	ENDM
+	
 ;
 ; http://www.mcmanis.com/chuck/robotics/projects/pic-16bit.htm
 ;
@@ -26,9 +51,13 @@ _REG_B       EQU     H'007C'
 ; 16 bit move from SRC to DST
 ;
 MOV16   MACRO   SRC, DST
-        MOVF    SRC,W
+        BANKSEL	SRC
+	MOVF    SRC,W
+	BANKSEL	DST
         MOVWF   DST
+	BANKSEL	SRC
         MOVF    SRC+1,W
+	BANKSEL	DST
         MOVWF   DST+1
         ENDM
 ;
@@ -100,12 +129,12 @@ SUB16   MACRO   DST, SRC
         SUBWF   DST+1,F       ; Subtract the high byte and we're done
 	ENDM
         
-SUBI16  MACRO   DST, SB
-        MOVLW   LOW (SB)
+SUBI16  MACRO   DST, CONST
+        MOVLW   LOW (CONST)
         SUBWF   (DST), F
-        MOVLW   HIGH (SB)
+        MOVLW   HIGH (CONST)
         BTFSS   STATUS, C
-        MOVLW   (HIGH (SB))+1
+        MOVLW   (HIGH (CONST))+1
         SUBWF   (DST)+1,F
         ENDM
                 

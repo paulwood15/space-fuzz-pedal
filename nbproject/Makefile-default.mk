@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=../ws2813-firmware/WS2813.asm colorize_analog.asm
+SOURCEFILES_QUOTED_IF_SPACED=../ws2813-firmware/WS2813.asm colorize_analog.asm UtilRoutines.asm
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/_ext/739432619/WS2813.o ${OBJECTDIR}/colorize_analog.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/_ext/739432619/WS2813.o.d ${OBJECTDIR}/colorize_analog.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/_ext/739432619/WS2813.o ${OBJECTDIR}/colorize_analog.o ${OBJECTDIR}/UtilRoutines.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/_ext/739432619/WS2813.o.d ${OBJECTDIR}/colorize_analog.o.d ${OBJECTDIR}/UtilRoutines.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/_ext/739432619/WS2813.o ${OBJECTDIR}/colorize_analog.o
+OBJECTFILES=${OBJECTDIR}/_ext/739432619/WS2813.o ${OBJECTDIR}/colorize_analog.o ${OBJECTDIR}/UtilRoutines.o
 
 # Source Files
-SOURCEFILES=../ws2813-firmware/WS2813.asm colorize_analog.asm
+SOURCEFILES=../ws2813-firmware/WS2813.asm colorize_analog.asm UtilRoutines.asm
 
 
 CFLAGS=
@@ -110,6 +110,14 @@ ${OBJECTDIR}/colorize_analog.o: colorize_analog.asm  nbproject/Makefile-${CND_CO
 	@${DEP_GEN} -d "${OBJECTDIR}/colorize_analog.o"
 	@${FIXDEPS} "${OBJECTDIR}/colorize_analog.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
+${OBJECTDIR}/UtilRoutines.o: UtilRoutines.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/UtilRoutines.o.d 
+	@${RM} ${OBJECTDIR}/UtilRoutines.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/UtilRoutines.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_SIMULATOR=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/UtilRoutines.lst\" -e\"${OBJECTDIR}/UtilRoutines.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/UtilRoutines.o\" \"UtilRoutines.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/UtilRoutines.o"
+	@${FIXDEPS} "${OBJECTDIR}/UtilRoutines.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
 else
 ${OBJECTDIR}/_ext/739432619/WS2813.o: ../ws2813-firmware/WS2813.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}/_ext/739432619" 
@@ -126,6 +134,14 @@ ${OBJECTDIR}/colorize_analog.o: colorize_analog.asm  nbproject/Makefile-${CND_CO
 	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/colorize_analog.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/colorize_analog.lst\" -e\"${OBJECTDIR}/colorize_analog.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/colorize_analog.o\" \"colorize_analog.asm\" 
 	@${DEP_GEN} -d "${OBJECTDIR}/colorize_analog.o"
 	@${FIXDEPS} "${OBJECTDIR}/colorize_analog.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+${OBJECTDIR}/UtilRoutines.o: UtilRoutines.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/UtilRoutines.o.d 
+	@${RM} ${OBJECTDIR}/UtilRoutines.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/UtilRoutines.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/UtilRoutines.lst\" -e\"${OBJECTDIR}/UtilRoutines.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/UtilRoutines.o\" \"UtilRoutines.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/UtilRoutines.o"
+	@${FIXDEPS} "${OBJECTDIR}/UtilRoutines.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
 endif
 

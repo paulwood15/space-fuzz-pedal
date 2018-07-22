@@ -1,8 +1,9 @@
 ; CONFIG
-#DEFINE WS2813_PIN	RC4	    ; Must use pin with high drive capabilities
-#DEFINE WS2813_LAT	LATC4	    ; 
-#DEFINE WS2813_HIDR	HIDC4	    ; 
-#DEFINE	NUM_LEDS	60	    ; number of LEDs in strip
+#define WS2813_PIN	RC4	    ; Must use pin with high drive capabilities
+#define WS2813_LAT	LATC4	    ; 
+#define WS2813_HIDR	HIDC4	    ; 
+#define	NUM_LEDS	60	    ; number of LEDs in strip
+#define GPR_SIZE	0x50
 
 
 ; REGISTER BIT FIELDS
@@ -11,3 +12,9 @@
     #define	FPSTM	6
     #define	FRC	5
     
+    ; RENDER_CON
+    #define	ROI	1
+    #define	RWM	0
+    
+    
+	

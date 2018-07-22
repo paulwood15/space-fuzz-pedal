@@ -17,12 +17,14 @@
 #include p16f1615.inc
 #include WS2813.inc
 #include UtilMacros.inc
+#include UtilRoutines.inc
     
     GLOBAL  DO_RENDER
     GLOBAL  EXTERN_INTERRUPT_SERV
     GLOBAL  EXTERN_INITIAL
-
-
+    
+    EXTERN  WRGB
+  
 ;*******************************************************************************
 ;			      MACRO DEFINITIONS
 ;*******************************************************************************
@@ -33,8 +35,8 @@ ACQ:
     GOTO    ACQ
    ENDM
  
-WITHIN_TRIGGER	MACRO	D	    ; sets C flag of STATUS register
-	BCCZ			    ; clear Z and C flags
+WITHIN_WINDOW	MACRO	D	    ; sets C flag of STATUS register
+	CLRSTAT			    ; clear Z and C flags
 	CMP16	TGRL, D		    ; test if above lower trigger - C will be clear
 	BTFSC	STATUS, C	    ; exits macro if C set = not above TGRL
 	GOTO	$+6
@@ -51,21 +53,45 @@ WITHIN_TRIGGER	MACRO	D	    ; sets C flag of STATUS register
 				    ; TRIGGER_OFF = 0.5V -> 5V / 10 -> 0x3FF / 10
     
     UDATA   0x20
+;TEMP REGISTERS
+TEMP8	RES 1
+TEMP16	RES 2
+    
+    
 ;ADC REGISTER
 WDATA	RES 2		    ; copied data from ADC read
     
 ;AMPLITUDE REGISTERS
-AMPL	RES 2		    ; calculated amplitude 
+AMPL_WAV    RES 2	    ; calculated amplitude 
 MIN_WAV	RES 2		    ; wave trough
 MAX_WAV	RES 2		    ; wave peak
 	
 ;FREQUENCY REGISTERS
-DELTA_T	RES 2		    ; change in timer3 ticks from 2 tiggered plots
+DELTA_T	RES 2				    ; change in timer3 ticks from 2 tiggered plots
 TGRH	RES 2;EQU 0x1FF + TRIGGER_OFF	    ; signal coming in biased to 2.5V w/ range [0V, 5V] 
 TGRL	RES 2;EQU 0x1FF - TRIGGER_OFF	    ; 2.5V corresponds to 0x3FF / 2 = 0x1FF
- 
-    
-    CODE	0x1800
+	
+    ; red colorization parameters
+RS1 RES 1		    ; red slope - can be constant or function of frequency (ADC result)
+RS2 RES	1
+R1  RES	2		    ; red point 1
+R2  RES 2		    ; red point 2
+R3  RES 2		    ; red point 3
+  
+    ; green colorization parameters
+GS1 RES 1		    ; green slope - can be constant or function of frequency (ADC result)
+GS2 RES 1
+G1  RES	2		    ; green point 1
+G2  RES 2		    ; green point 2
+G3  RES 2		    ; green point 3
+G4  RES 2		    ; green point 4
+  
+    ; blue colorization parameters
+BS1 RES 1		    ; blue slope - can be constant or function of frequency (ADC result)
+B1  RES	2		    ; blue point 1
+B2  RES 2		    ; blue point 2
+  
+COLORIZOR   CODE
 ;*******************************************************************************
 ;				EXTERN_INITIAL
 ;*******************************************************************************   
@@ -105,6 +131,18 @@ EXTERN_INITIAL:
     ACQ_DELAY				; acquisition delay
     BSF	    ADCON0, ADGO		; start conversion
     
+  
+;TODO: set colorize parameters
+    BANKSEL WDATA
+    INIT16  WDATA, D'55639'
+    BANKSEL RS1
+    MOVLF   RS1, 4
+    MOVLF   RS2, 5
+    INIT16  R1, D'12288'
+    INIT16  R2, D'16384'
+    INIT16  R3, D'49152'
+    CALL    SET_WRGB
+    
     RETURN
     
  
@@ -112,7 +150,6 @@ EXTERN_INITIAL:
 ;			    EXTERN_INTERRUPT_SERV
 ;*******************************************************************************
 EXTERN_INTERRUPT_SERV:
-    ;TODO: determine analog characteristics, then start new adc conversion, clear flags
 ;    BANKSEL ADRESH
 ;    CPYFF   ADRESH, WDATA		; copy high adc result to high wdata
 ;    BANKSEL ADRESL
@@ -129,12 +166,12 @@ EXTERN_INTERRUPT_SERV:
 ;    INIT16  WDATA, 0x2FE
 ;    INIT16  WDATA, 0x1B0	; 0x1FF +- 4F	    |	no
 ;    INIT16  WDATA, 0x3FF	; 0x3FF		    |	no
-    INIT16  WDATA, 0x000	; 0x000		    |	no
-;    INIT16  WDATA, 0x1FF	; 0x1FF		    |	yes
+;    INIT16  WDATA, 0x000	; 0x000		    |	no
+    INIT16  WDATA, 0x1FF	; 0x1FF		    |	yes
    
 ;TEST FOR NEW WAVE TROUGH
     BANKSEL MIN_WAV
-    BCCZ				; clear Z and C  flags
+    CLRSTAT				; clear Z and C  flags
     CMP16   WDATA, MIN_WAV
     BTFSS   STATUS, C			; test if WDATA < MIN_WAV, skip if isn't
     GOTO    SET_TROUGH
@@ -145,7 +182,7 @@ END_TEST1:
     
 ;TEST FOR NEW WAVE PEAK
     BANKSEL MAX_WAV
-    BCCZ				; clear Z and C  flags
+    CLRSTAT				; clear Z and C  flags
     CMP16   MAX_WAV, WDATA
     BTFSS   STATUS, C			; test if WDATA > MAX_WAV, skip if isn't
     GOTO    SET_PEAK
@@ -156,18 +193,30 @@ END_TEST2:
      
 ;TEST IF WITHIN TRIGGER WINDOW
     BANKSEL T3CON
-    BCCZ				; clear Z and C  flags
+    CLRSTAT				; clear Z and C  flags
     BTFSS   T3CON, TMR3ON		; test whether there has already been a previous trigger
     GOTO    FIRST_TRGR
     GOTO    SECOND_TRGR
 FIRST_TRGR:				; if first trigger, start timer3 to measure cycles between triggers
-    WITHIN_TRIGGER  WDATA		; C will be set if within trigger window
+    BANKSEL WDATA
+    CLRSTAT				; clear Z and C flags
+    CMP16   TGRL, WDATA			; test if above lower trigger - C will be clear
+    BTFSC   STATUS, C			; exits macro if C set = not above TGRL
+    GOTO    $+6
+    CMP16   TGRH, WDATA     		; will set c if below TGRH
+    ;WITHIN_WINDOW  WDATA		; C will be set if within trigger window
     BANKSEL T3CON
     BTFSC   STATUS, C
     BSF	    T3CON, TMR3ON		; start timer3 if within trigger window
     GOTO    END_TRGR_TEST		; end trigger window test
 SECOND_TRGR:
-    WITHIN_TRIGGER  WDATA			; C will be set if within trigger window
+    BANKSEL WDATA
+    CLRSTAT				; clear Z and C flags
+    CMP16   TGRL, WDATA			; test if above lower trigger - C will be clear
+    BTFSC   STATUS, C			; exits macro if C set = not above TGRL
+    GOTO    $+6
+    CMP16   TGRH, WDATA     		; will set c if below TGRH
+    ;WITHIN_WINDOW  WDATA		; C will be set if within trigger window
     BANKSEL T3CON
     BTFSS   STATUS, C			; end test if not within window
     GOTO    END_TRGR_TEST		; end trigger window test
@@ -192,16 +241,176 @@ END_TRGR_TEST:
 ;				 DO_RENDER
 ;*******************************************************************************
 DO_RENDER:
-    ;TODO: determine color based on analog characteristics
+    PAGESEL SET_WRGB
+    CALL    SET_WRGB
     
     RETURN
     
 
     
     
+SET_WRGB:
+
+; GREEN PIECEWISE FUNCTION    
+;   | 0x00		, f <= G1
+;   | GS1(f-G1)		, G1 < f <= G2
+;   | 0xFF		, G2 < f <= G3
+;   | 0xFF - GS1(f-G3)	, G3 < f <= G4
+;   | 0x00		, f > G4
+;
+SET_GREEN:
+    BCF	    STATUS, C
+    BANKSEL WDATA
+    CMP16   WDATA, G1			; check for first range in piecewise
+    BTFSS   STATUS, C			
+    GOTO    G_1				; within first range
+    GOTO    G_12			; MIGHT be in the next range
+G_1:	; first range in piecewise
+    BANKSEL WRGB
+    MOVLF   WRGB, 0x00
+    GOTO    SET_RED
+    
+G_12:   ; second range in piecewise
+    BCF	    STATUS, C
+    BANKSEL WDATA
+    CMP16   WDATA, G2
+    BTFSC   STATUS, C	
+     GOTO    G_23			; might be in the next range 
+    
+    MOV16   WDATA, TEMP16		; in this range
+    SUB16   TEMP16, G3			; (f - G1)
+    RSF16   TEMP16, GS1			; (f - G1) / (1/m >> GS)
+    BANKSEL WRGB
+    CPYFF   TEMP16, WRGB		; WRGB in GRB format
+    GOTO    SET_RED
+    
+G_23:	; third range in piecewise
+    BCF	    STATUS, C
+    BANKSEL WDATA
+    CMP16   WDATA, G3
+    BTFSC   STATUS, C			; might be in next range 
+     GOTO    G_34
+    
+    BANKSEL WRGB			; in this range 
+    MOVLF   WRGB, 0xFF
+    GOTO    SET_RED
+    
+G_34:	; fourth range in piecewise
+    BCF	    STATUS, C
+    BANKSEL WDATA
+    CMP16   WDATA, G2
+    BTFSC   STATUS, C	
+     GOTO    G_4			; it is in the fifth range
+    
+    MOV16   WDATA, TEMP16		; in this range
+    SUB16   TEMP16, G1			; (f - G1)
+    RSF16   TEMP16, GS2			; (f - G1) / (1/m >> GS)
+    MOVLF   TEMP8, 0xFF
+    MOVFW   TEMP16
+    SUBWF   TEMP8, F
+    BANKSEL WRGB
+    CPYFF   TEMP8, WRGB			; WRGB in GRB format
+    GOTO    SET_RED
+    
+G_4:	; fifth range in piecewise
+    BANKSEL WRGB
+    MOVLF   WRGB, 0x00
     
     
     
+; RED PIECEWISE FUNCTION    
+;   | 0xFF		, f <= R1
+;   | 0xFF - RS2(f-GR), R1 < f <= R2
+;   | 0x00		, R2 < f <= R3
+;   | RS1(f-R1)		, f > R3
+;    
+SET_RED:
+    BCF	    STATUS, C
+    BANKSEL WDATA
+    CMP16   WDATA, R1
+    BTFSS   STATUS, C			; test if WDATA <= R1
+    GOTO    R_1
+    GOTO    R_12
+R_1:	; WDATA <= R1
+    BANKSEL WRGB
+    MOVLF   WRGB+1, 0xFF
+    GOTO    SET_BLUE
     
+R_12:   ; R1 < WDATA <= R2 
+    BCF	    STATUS, C
+    BANKSEL WDATA
+    CMP16   WDATA, R2
+    BTFSC   STATUS, C	
+     GOTO    R_23			; go to R_23 if WDATA not within range of R_12
+    
+    MOV16   WDATA, TEMP16		; (f - R1)
+    SUB16   TEMP16, R1
+    RSF16   TEMP16, RS1			; (f - R1) / (1/m >> RS)
+    MOVLF   TEMP8, 0xFF
+    MOVFW   TEMP16
+    SUBWF   TEMP8, F
+    BANKSEL WRGB
+    CPYFF   TEMP8, WRGB+1		; WRGB in GRB format
+    GOTO    SET_BLUE
+    
+R_23:	; R2 < WDATA <= R3 
+    BCF	    STATUS, C
+    BANKSEL WDATA
+    CMP16   WDATA, R3
+    BTFSC   STATUS, C	
+     GOTO    R_3
+    
+    BANKSEL WRGB
+    MOVLF   WRGB+1, 0x00
+    GOTO    SET_BLUE
+    
+R_3:	; WDATA > R3
+    BCF	    STATUS, C
+    BANKSEL WDATA
+    MOV16   WDATA, TEMP16		; (f - R1)
+    SUB16   TEMP16, R3
+    RSF16   TEMP16, RS2			; (f - R1) / (1/m >> RS)
+    BANKSEL WRGB
+    CPYFF   TEMP16, WRGB+1		; WRGB in GRB format
+  
+    
+    
+; BLUE PIECEWISE FUNCTION    
+;   | 0x00		, f <= B1
+;   | GS1(f-G1)		, B1 < f <= B2
+;   | 0xFF		, f > B2
+SET_BLUE:    
+    BCF	    STATUS, C
+    BANKSEL WDATA
+    CMP16   WDATA, B1			; check for first range in piecewise
+    BTFSS   STATUS, C			
+    GOTO    B_1				; within first range
+    GOTO    B_12			; MIGHT be in the next range
+B_1:	; first range in piecewise
+    BANKSEL WRGB
+    MOVLF   WRGB, 0x00
+    RETURN
+    
+B_12:   ; second range in piecewise
+    BCF	    STATUS, C
+    BANKSEL WDATA
+    CMP16   WDATA, B2
+    BTFSC   STATUS, C	
+     GOTO    B_23			; might be in the next range 
+    
+    MOV16   WDATA, TEMP16		; in this range
+    SUB16   TEMP16, B1			; (f - G1)
+    RSF16   TEMP16, BS1			; (f - G1) / (1/m >> GS)
+    BANKSEL WRGB
+    CPYFF   TEMP16, WRGB		; WRGB in GRB format
+    RETURN
+    
+B_23:	; third range in piecewise
+    BCF	    STATUS, C
+    BANKSEL WRGB			 
+    MOVLF   WRGB, 0xFF
+    RETURN
+
     
     END
+    

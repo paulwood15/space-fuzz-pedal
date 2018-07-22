@@ -1,4 +1,4 @@
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE  1
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -45,603 +45,1402 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00011     #define     FPSTM   6
                       00012     #define     FRC     5
                       00013     
+                      00014     
+                      00015     
+                      00016         
                       00019 #include UtilMacros.inc
-                      00001 MOVLF   MACRO   DEST, LIT
-                      00002         BANKSEL DEST
-                      00003         MOVLW   LIT
-                      00004         MOVWF   DEST
-                      00005         ENDM
-                      00006         
-                      00007 BCCZ    MACRO    
-                      00008         BCF         STATUS, Z
-                      00009         BCF         STATUS, C
-                      00010         ENDM
-                      00011         
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE  2
+                      00001 #include UtilRoutines.inc
+                      00001 
+                      00002     
+                      00003 ;************************************************************************************
+                      00004 ;                             "Div" ROUTINE NECESSITIES    
+                      00005 ;************************************************************************************
+  0000                00006     EXTERN  RSHIFT16
+  0000                00007     EXTERN  LSHIFT16
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00012 CPYFF   MACRO   FROM,TO
-                      00013         MOVF    FROM, W
-                      00014         MOVWF   TO
+  0000                00008     EXTERN  SHIFTNUM
+                      00009     
+                      00010 
+                      00011     
+                      00012 
+                      00002 #include p16f1615.inc
+                      05120         LIST
+                      05121 
+                      05122 ;==========================================================================
+                      05123 ; Build date : Nov 22 2017
+                      05124 ;  MPASM PIC16F1615 processor include
+                      05125 ; 
+                      05126 ;  (c) Copyright 1999-2017 Microchip Technology, All rights reserved
+                      05127 ;==========================================================================
+                      05128 
+Message[310]: Superseding current maximum RAM and RAM map.
+                      10238         LIST
+                      00003         
+                      00004         
+                      00005 MOVLF   MACRO   DEST, LIT
+                      00006         BANKSEL DEST
+                      00007         MOVLW   LIT
+                      00008         MOVWF   DEST
+                      00009         ENDM
+                      00010         
+                      00011 CLRSTAT MACRO    
+                      00012         BCF     STATUS, Z
+                      00013         BCF     STATUS, C
+                      00014         BCF     STATUS, DC
                       00015         ENDM
-                      00016 
-                      00017 ;
-                      00018 ; http://www.mcmanis.com/chuck/robotics/projects/pic-16bit.htm
-                      00019 ;
-                      00020 ; These are the psuedo "registers" used by the 16 BIT operations
-                      00021 ;        
-  0000007E            00022 _REG_A       EQU     H'007E'
-  0000007C            00023 _REG_B       EQU     H'007C'
-                      00024 
-                      00025 ;
-                      00026 ; 16 bit move from SRC to DST
-                      00027 ;
-                      00028 MOV16   MACRO   SRC, DST
-                      00029         MOVF    SRC,W
-                      00030         MOVWF   DST
-                      00031         MOVF    SRC+1,W
-                      00032         MOVWF   DST+1
-                      00033         ENDM
-                      00034 ;
-                      00035 ; 16 bit unsigned compare, returns Z and C set appropriately
-                      00036 ; Compares the registers "CMP_A" and "CMP_B"
-                      00037 ; Flag states and what they mean:
-                      00038 ;
-                      00039 ;       Z true - X & Y are equal
-                      00040 ;       C true - X > Y
-                      00041 ;       C false - X < Y
-                      00042 ;        
-                      00043 CMP16   MACRO   X, Y
-                      00044         MOV16   X, _REG_A
-                      00045         SUB16   _REG_A,Y
-                      00046         MOVF    _REG_A,W
-                      00047         IORWF   _REG_A+1,W
-                      00048         ENDM
+                      00016         
+                      00017 CPYFF   MACRO   FROM,TO
+                      00018         BANKSEL FROM
+                      00019         MOVF    FROM, W
+                      00020         BANKSEL TO
+                      00021         MOVWF   TO
+                      00022         ENDM
+                      00023 
+                      00024 RSF16   MACRO   NUM, NUMBITS
+                      00025         MOV16   NUM, SHIFTNUM
+                      00026         BANKSEL NUMBITS
+                      00027         MOVFW   NUMBITS
+                      00028         PAGESEL RSHIFT16
+                      00029         CALL    RSHIFT16
+                      00030         MOV16   SHIFTNUM, NUM
+                      00031         ENDM
+                      00032         
+                      00033 LSF16   MACRO   NUM, NUMBITS
+                      00034         MOV16   NUM, SHIFTNUM
+                      00035         BANKSEL NUMBITS
+                      00036         MOVFW   NUMBITS
+                      00037         PAGESEL LSHIFT16
+                      00038         CALL    LSHIFT16
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00039         MOV16   SHIFTNUM, NUM
+                      00040         ENDM
+                      00041         
+                      00042 ;
+                      00043 ; http://www.mcmanis.com/chuck/robotics/projects/pic-16bit.htm
+                      00044 ;
+                      00045 ; These are the psuedo "registers" used by the 16 BIT operations
+                      00046 ;        
+  0000007E            00047 _REG_A       EQU     H'007E'
+  0000007C            00048 _REG_B       EQU     H'007C'
                       00049 
                       00050 ;
-                      00051 ; Initialize a 16 bit value
+                      00051 ; 16 bit move from SRC to DST
                       00052 ;
-                      00053 INIT16  MACRO   VAR, CONST
-                      00054         MOVLW   low (CONST)
-                      00055         MOVWF   (VAR)
-                      00056         MOVLW   high (CONST)
-                      00057         MOVWF   (VAR)+1
-                      00058         ENDM        
-                      00059 
-                      00060 ;
-                      00061 ; Initialize a 16 bit value to zero
-                      00062 ;
-                      00063 CLR16   MACRO   VAR
-                      00064         CLRF    VAR
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE  3
+                      00053 MOV16   MACRO   SRC, DST
+                      00054         BANKSEL SRC
+                      00055         MOVF    SRC,W
+                      00056         BANKSEL DST
+                      00057         MOVWF   DST
+                      00058         BANKSEL SRC
+                      00059         MOVF    SRC+1,W
+                      00060         BANKSEL DST
+                      00061         MOVWF   DST+1
+                      00062         ENDM
+                      00063 ;
+                      00064 ; 16 bit unsigned compare, returns Z and C set appropriately
+                      00065 ; Compares the registers "CMP_A" and "CMP_B"
+                      00066 ; Flag states and what they mean:
+                      00067 ;
+                      00068 ;       Z true - X & Y are equal
+                      00069 ;       C true - X > Y
+                      00070 ;       C false - X < Y
+                      00071 ;        
+                      00072 CMP16   MACRO   X, Y
+                      00073         MOV16   X, _REG_A
+                      00074         SUB16   _REG_A,Y
+                      00075         MOVF    _REG_A,W
+                      00076         IORWF   _REG_A+1,W
+                      00077         ENDM
+                      00078 
+                      00079 ;
+                      00080 ; Initialize a 16 bit value
+                      00081 ;
+                      00082 INIT16  MACRO   VAR, CONST
+                      00083         MOVLW   low (CONST)
+                      00084         MOVWF   (VAR)
+                      00085         MOVLW   high (CONST)
+                      00086         MOVWF   (VAR)+1
+                      00087         ENDM        
+                      00088 
+                      00089 ;
+                      00090 ; Initialize a 16 bit value to zero
+                      00091 ;
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00065         CLRF    VAR+1
-                      00066         ENDM
-                      00067         
-                      00068 ;
-                      00069 ; Macro to do a logical shift right on a 16 bit value
-                      00070 ; (0 is shifted into the MSB)
-                      00071 ;
-                      00072 LSR16   MACRO   VAR16
-                      00073         BCF     STATUS, C       ; Clear carry
-                      00074         RRF     (VAR16)+1,F     ; Rotate high byte right
-                      00075         RRF     (VAR16),F       ; Rotate low byte right
-                      00076         ENDM
-                      00077         
-                      00078 LSL16   MACRO   VAR16
-                      00079         BCF     STATUS, C       ; Clear carry
-                      00080         RLF     (VAR16),F       ; Rotate low byte left
-                      00081         RLF     (VAR16)+1,F     ; Rotate upper byte left
-                      00082         ENDM        
-                      00083                 
-                      00084 ;
-                      00085 ; 16 bit unsigned subtraction with carry out.
-                      00086 ; Word format is little endian (LSB at lower address)
-                      00087 ; Operation is DST = DST - SRC
-                      00088 ;
-                      00089 ; (This from the "tips and tricks" seminar handout)
-                      00090 ;
-                      00091 ; DST is replaced, SRC is preserved, Carry is set correctly
-                      00092 ;
-                      00093 ;
-                      00094 SUB16   MACRO   DST, SRC
-                      00095         MOVF    SRC,W         ; Get low byte of subtrahend
-                      00096         SUBWF   DST,F         ; Subtract DST(low) - SRC(low)
-                      00097         MOVF    SRC+1,W       ; Now get high byte of subtrahend
-                      00098         BTFSS   STATUS,C        ; If there was a borrow, rather than
-                      00099         INCF    SRC+1,W       ; decrement high byte of dst we inc src
-                      00100         SUBWF   DST+1,F       ; Subtract the high byte and we're done
-                      00101         ENDM
-                      00102         
-                      00103 SUBI16  MACRO   DST, SB
-                      00104         MOVLW   LOW (SB)
-                      00105         SUBWF   (DST), F
-                      00106         MOVLW   HIGH (SB)
-                      00107         BTFSS   STATUS, C
-                      00108         MOVLW   (HIGH (SB))+1
-                      00109         SUBWF   (DST)+1,F
-                      00110         ENDM
-                      00111                 
-                      00112 
+                      00092 CLR16   MACRO   VAR
+                      00093         CLRF    VAR
+                      00094         CLRF    VAR+1
+                      00095         ENDM
+                      00096         
+                      00097 ;
+                      00098 ; Macro to do a logical shift right on a 16 bit value
+                      00099 ; (0 is shifted into the MSB)
+                      00100 ;
+                      00101 LSR16   MACRO   VAR16
+                      00102         BCF     STATUS, C       ; Clear carry
+                      00103         RRF     (VAR16)+1,F     ; Rotate high byte right
+                      00104         RRF     (VAR16),F       ; Rotate low byte right
+                      00105         ENDM
+                      00106         
+                      00107 LSL16   MACRO   VAR16
+                      00108         BCF     STATUS, C       ; Clear carry
+                      00109         RLF     (VAR16),F       ; Rotate low byte left
+                      00110         RLF     (VAR16)+1,F     ; Rotate upper byte left
+                      00111         ENDM        
+                      00112                 
                       00113 ;
-                      00114 ; 16 bit unsigned addition with carry out.
-                      00115 ; Operation: DST = DST + SRC                       
-                      00116 ;
-                      00117 ; DST is replaced, SRC is preserved, Carry is set correctly
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE  4
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-                      00118 ;
-                      00119 ADD16   MACRO   DST,SRC 
-                      00120         MOVF    (SRC),W         ; Get low byte
-                      00121         ADDWF   (DST),F         ; Add to destination
-                      00122         MOVF    (SRC)+1,W       ; Get high byte
-                      00123         BTFSC   STATUS,C        ; Check for carry
-                      00124         INCF    (SRC)+1,W       ; Add one for carry
-                      00125         ADDWF   (DST)+1,F       ; Add high byte into DST
-                      00126         ENDM
-                      00127 
-                      00128 ;
-                      00129 ; 16 bit Add Immediate
-                      00130 ; Operation: DST = DST + Constant
-                      00131 ;
-                      00132 ; DST is updated, carry is set correctly.
-                      00133 ;
-                      00134 ADDI16  MACRO   DST,AD
-                      00135         MOVLW   LOW (AD)
-                      00136         ADDWF   DST,F
-                      00137         MOVLW   HIGH (AD)
-                      00138         BTFSC   STATUS,C
-                      00139         MOVLW   (HIGH (AD)) + 1
-                      00140         ADDWF   (DST)+1,F
-                      00141         ENDM
+                      00114 ; 16 bit unsigned subtraction with carry out.
+                      00115 ; Word format is little endian (LSB at lower address)
+                      00116 ; Operation is DST = DST - SRC
+                      00117 ;
+                      00118 ; (This from the "tips and tricks" seminar handout)
+                      00119 ;
+                      00120 ; DST is replaced, SRC is preserved, Carry is set correctly
+                      00121 ;
+                      00122 ;
+                      00123 SUB16   MACRO   DST, SRC
+                      00124         MOVF    SRC,W         ; Get low byte of subtrahend
+                      00125         SUBWF   DST,F         ; Subtract DST(low) - SRC(low)
+                      00126         MOVF    SRC+1,W       ; Now get high byte of subtrahend
+                      00127         BTFSS   STATUS,C        ; If there was a borrow, rather than
+                      00128         INCF    SRC+1,W       ; decrement high byte of dst we inc src
+                      00129         SUBWF   DST+1,F       ; Subtract the high byte and we're done
+                      00130         ENDM
+                      00131         
+                      00132 SUBI16  MACRO   DST, CONST
+                      00133         MOVLW   LOW (CONST)
+                      00134         SUBWF   (DST), F
+                      00135         MOVLW   HIGH (CONST)
+                      00136         BTFSS   STATUS, C
+                      00137         MOVLW   (HIGH (CONST))+1
+                      00138         SUBWF   (DST)+1,F
+                      00139         ENDM
+                      00140                 
+                      00141 
                       00142 ;
-                      00143 ; Negate 16 bit value
-                      00144 ; Find two's complement value of a 16 bit number
+                      00143 ; 16 bit unsigned addition with carry out.
+                      00144 ; Operation: DST = DST + SRC                       
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
                       00145 ;
-                      00146 NEG16   MACRO   DST
-                      00147         COMF    (DST)
-                      00148         COMF    (DST)+1
-                      00149         INC16   DST
-                      00150         ENDM
-                      00151                 
-                      00152 ;
-                      00153 ; Increment 16 bit value, sets Z on exit.
-                      00154 ;
-                      00155 ; Operation: DST++
-                      00156 ;
-                      00157 INC16   MACRO   DST        
-                      00158         INCFSZ  (DST),W         ; Add one to low byte
-                      00159         DECF    (DST)+1,F       ; No carry (negates next step)
-                      00160         INCF    (DST)+1,F       ; Add one to high byte
-                      00161         MOVWF   (DST)           ; Store updated low byte back.
-                      00162         IORWF   (DST)+1,W       ; Set Z flag
-                      00163         ENDM
-                      00164 
-                      00165 ;
-                      00166 ; Decrement 16 bit value, sets Z on exit
-                      00167 ;        
-                      00168 ; Operation: DST--
-                      00169 ;
-                      00170 DEC16   MACRO   DST
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE  5
+                      00146 ; DST is replaced, SRC is preserved, Carry is set correctly
+                      00147 ;
+                      00148 ADD16   MACRO   DST,SRC 
+                      00149         MOVF    (SRC),W         ; Get low byte
+                      00150         ADDWF   (DST),F         ; Add to destination
+                      00151         MOVF    (SRC)+1,W       ; Get high byte
+                      00152         BTFSC   STATUS,C        ; Check for carry
+                      00153         INCF    (SRC)+1,W       ; Add one for carry
+                      00154         ADDWF   (DST)+1,F       ; Add high byte into DST
+                      00155         ENDM
+                      00156 
+                      00157 ;
+                      00158 ; 16 bit Add Immediate
+                      00159 ; Operation: DST = DST + Constant
+                      00160 ;
+                      00161 ; DST is updated, carry is set correctly.
+                      00162 ;
+                      00163 ADDI16  MACRO   DST,AD
+                      00164         MOVLW   LOW (AD)
+                      00165         ADDWF   DST,F
+                      00166         MOVLW   HIGH (AD)
+                      00167         BTFSC   STATUS,C
+                      00168         MOVLW   (HIGH (AD)) + 1
+                      00169         ADDWF   (DST)+1,F
+                      00170         ENDM
+                      00171 ;
+                      00172 ; Negate 16 bit value
+                      00173 ; Find two's complement value of a 16 bit number
+                      00174 ;
+                      00175 NEG16   MACRO   DST
+                      00176         COMF    (DST)
+                      00177         COMF    (DST)+1
+                      00178         INC16   DST
+                      00179         ENDM
+                      00180                 
+                      00181 ;
+                      00182 ; Increment 16 bit value, sets Z on exit.
+                      00183 ;
+                      00184 ; Operation: DST++
+                      00185 ;
+                      00186 INC16   MACRO   DST        
+                      00187         INCFSZ  (DST),W         ; Add one to low byte
+                      00188         DECF    (DST)+1,F       ; No carry (negates next step)
+                      00189         INCF    (DST)+1,F       ; Add one to high byte
+                      00190         MOVWF   (DST)           ; Store updated low byte back.
+                      00191         IORWF   (DST)+1,W       ; Set Z flag
+                      00192         ENDM
+                      00193 
+                      00194 ;
+                      00195 ; Decrement 16 bit value, sets Z on exit
+                      00196 ;        
+                      00197 ; Operation: DST--
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE  6
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00171         DECF    (DST),F         ; Decrement low byte
-                      00172         INCFSZ  (DST),W         ; Check for underflow
-                      00173         INCF    (DST)+1,F       ; Update
-                      00174         DECF    (DST)+1,F       ; Fixup
-                      00175         MOVF    (DST),W
-                      00176         IORWF   (DST)+1,W       ; Set Z bit
-                      00177         ENDM
-                      00178 
-                      00020     
-  0000                00021     GLOBAL  DO_RENDER
-  0000                00022     GLOBAL  EXTERN_INTERRUPT_SERV
-  0000                00023     GLOBAL  EXTERN_INITIAL
+                      00198 ;
+                      00199 DEC16   MACRO   DST
+                      00200         DECF    (DST),F         ; Decrement low byte
+                      00201         INCFSZ  (DST),W         ; Check for underflow
+                      00202         INCF    (DST)+1,F       ; Update
+                      00203         DECF    (DST)+1,F       ; Fixup
+                      00204         MOVF    (DST),W
+                      00205         IORWF   (DST)+1,W       ; Set Z bit
+                      00206         ENDM
+                      00207 
+                      00020 #include UtilRoutines.inc
+                      00013 
+                      00014     
+                      00015 ;************************************************************************************
+                      00016 ;                             "Div" ROUTINE NECESSITIES    
+                      00017 ;************************************************************************************
+  0000                00018     EXTERN  RSHIFT16
+  0000                00019     EXTERN  LSHIFT16
+  0000                00020     EXTERN  SHIFTNUM
+                      00021     
+                      00022 
+                      00023     
                       00024 
-                      00025 
-                      00026 ;*******************************************************************************
-                      00027 ;                             MACRO DEFINITIONS
+                      00021     
+  0000                00022     GLOBAL  DO_RENDER
+  0000                00023     GLOBAL  EXTERN_INTERRUPT_SERV
+  0000                00024     GLOBAL  EXTERN_INITIAL
+                      00025     
+  0000                00026     EXTERN  WRGB
+                      00027   
                       00028 ;*******************************************************************************
-                      00029 ACQ_DELAY   MACRO
-                      00030    MOVLW    0x0E
-                      00031 ACQ:
-                      00032     DECFSZ  WREG, W
-                      00033     GOTO    ACQ
-                      00034    ENDM
-                      00035  
-                      00036 WITHIN_TRIGGER  MACRO   D           ; sets C flag of STATUS register
-                      00037         BCCZ                        ; clear Z and C flags
-                      00038         CMP16   TGRL, D             ; test if above lower trigger - C will be clear
-                      00039         BTFSS   STATUS, C           ; exits macro if C set = not above TGRL
-                      00040         CMP16   TGRH, D             ; will set c if below TGRH
-                      00041         
-                      00042         ENDM
-                      00043    
-                      00044 ;*******************************************************************************
-                      00045 ;                           VARIABLE DEFINITIONS
+                      00029 ;                             MACRO DEFINITIONS
+                      00030 ;*******************************************************************************
+                      00031 ACQ_DELAY   MACRO
+                      00032    MOVLW    0x0E
+                      00033 ACQ:
+                      00034     DECFSZ  WREG, W
+                      00035     GOTO    ACQ
+                      00036    ENDM
+                      00037  
+                      00038 WITHIN_WINDOW   MACRO   D           ; sets C flag of STATUS register
+                      00039         CLRSTAT                     ; clear Z and C flags
+                      00040         CMP16   TGRL, D             ; test if above lower trigger - C will be clear
+                      00041         BTFSC   STATUS, C           ; exits macro if C set = not above TGRL
+                      00042         GOTO    $+6
+                      00043         CMP16   TGRH, D             ; will set c if below TGRH
+                      00044         ENDM
+                      00045    
                       00046 ;*******************************************************************************
-                      00047     #DEFINE ADC_CH      AN3         ; RA4
-                      00048     #DEFINE ADC_TRIS    TRISA4
-                      00049     #DEFINE ADC_ANSEL   ANSA4
-                      00050     #DEFINE TRIGGER_OFF 0x3F        ; 10bit resolution  [0V, 5V] corresponds to [0x000, 0x3FF]
-                      00051                                     ; TRIGGER_OFF = 0.5V -> 5V / 10 -> 0x3FF / 10
-                      00052     
-                      00053     UDATA   0x20
-                      00054 ;ADC REGISTER
-0020                  00055 WDATA   RES 2               ; copied data from ADC read
-                      00056     
-                      00057 ;AMPLITUDE REGISTERS
-0022                  00058 AMPL    RES 2               ; calculated amplitude 
-0024                  00059 MIN_WAV RES 2               ; wave trough
-0026                  00060 MAX_WAV RES 2               ; wave peak
-                      00061         
-                      00062 ;FREQUENCY REGISTERS
-0028                  00063 DELTA_T RES 2               ; change in timer3 ticks from 2 tiggered plots
-  0000023E            00064 TGRH    EQU 0x1FF + TRIGGER_OFF     ; signal coming in biased to 2.5V w/ range [0V, 5V] 
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE  6
+                      00047 ;                           VARIABLE DEFINITIONS
+                      00048 ;*******************************************************************************
+                      00049     #DEFINE ADC_CH      AN3         ; RA4
+                      00050     #DEFINE ADC_TRIS    TRISA4
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE  7
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-  000001C0            00065 TGRL    EQU 0x1FF - TRIGGER_OFF     ; 2.5V corresponds to 0x3FF / 2 = 0x1FF
-                      00066  
-                      00067     
-                      00068     CODE        0x1800
-                      00069 ;*******************************************************************************
-                      00070 ;                               EXTERN_INITIAL
-                      00071 ;*******************************************************************************   
-1800                  00072 EXTERN_INITIAL:
-                      00073 ;PORT CONFIG
-1800   0022           00074     BANKSEL LATA
+                      00051     #DEFINE ADC_ANSEL   ANSA4
+                      00052     #DEFINE TRIGGER_OFF 0x3F        ; 10bit resolution  [0V, 5V] corresponds to [0x000, 0x3FF]
+                      00053                                     ; TRIGGER_OFF = 0.5V -> 5V / 10 -> 0x3FF / 10
+                      00054     
+                      00055     UDATA   0x20
+                      00056 ;TEMP REGISTERS
+0020                  00057 TEMP8   RES 1
+0021                  00058 TEMP16  RES 2
+                      00059     
+                      00060     
+                      00061 ;ADC REGISTER
+0023                  00062 WDATA   RES 2               ; copied data from ADC read
+                      00063     
+                      00064 ;AMPLITUDE REGISTERS
+0025                  00065 AMPL_WAV    RES 2           ; calculated amplitude 
+0027                  00066 MIN_WAV RES 2               ; wave trough
+0029                  00067 MAX_WAV RES 2               ; wave peak
+                      00068         
+                      00069 ;FREQUENCY REGISTERS
+002B                  00070 DELTA_T RES 2                               ; change in timer3 ticks from 2 tiggered plots
+002D                  00071 TGRH    RES 2;EQU 0x1FF + TRIGGER_OFF       ; signal coming in biased to 2.5V w/ range [0V, 5V] 
+002F                  00072 TGRL    RES 2;EQU 0x1FF - TRIGGER_OFF       ; 2.5V corresponds to 0x3FF / 2 = 0x1FF
+                      00073         
+                      00074     ; red colorization parameters
+0031                  00075 RS1 RES 1                   ; red slope - can be constant or function of frequency (ADC result)
+0032                  00076 RS2 RES 1
+0033                  00077 R1  RES 2                   ; red point 1
+0035                  00078 R2  RES 2                   ; red point 2
+0037                  00079 R3  RES 2                   ; red point 3
+                      00080   
+                      00081     ; green colorization parameters
+0039                  00082 GS1 RES 1                   ; green slope - can be constant or function of frequency (ADC result)
+003A                  00083 GS2 RES 1
+003B                  00084 G1  RES 2                   ; green point 1
+003D                  00085 G2  RES 2                   ; green point 2
+003F                  00086 G3  RES 2                   ; green point 3
+0041                  00087 G4  RES 2                   ; green point 4
+                      00088   
+                      00089     ; blue colorization parameters
+0043                  00090 BS1 RES 1                   ; blue slope - can be constant or function of frequency (ADC result)
+0044                  00091 B1  RES 2                   ; blue point 1
+0046                  00092 B2  RES 2                   ; blue point 2
+                      00093   
+                      00094 COLORIZOR   CODE
+                      00095 ;*******************************************************************************
+                      00096 ;                               EXTERN_INITIAL
+                      00097 ;*******************************************************************************   
+0000                  00098 EXTERN_INITIAL:
+                      00099 ;PORT CONFIG
+0000   0022           00100     BANKSEL LATA
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-1801   018C           00075     CLRF    LATA
-1802   0020           00076     BANKSEL PORTA
-1803   160C           00077     BSF     PORTA, ADC_TRIS
-1804   0023           00078     BANKSEL ANSELA
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-1805   160C           00079     BSF     ANSELA, ADC_ANSEL
-                      00080 
-                      00081 ;ADC CONFIG
-1806   0021           00082     BANKSEL ADCON1
-                      00083     MOVLF   ADCON1, b'10000000'         ; right justified, Fosc/2, VDD ref
-1807   0021               M         BANKSEL ADCON1
-1808   3080               M         MOVLW   b'10000000'
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-1809   009E               M         MOVWF   ADCON1
-                      00084     MOVLF   ADCON0, b'00001100'         ; set output channel to AN3
-180A   0021               M         BANKSEL ADCON0
-180B   300C               M         MOVLW   b'00001100'
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-180C   009D               M         MOVWF   ADCON0
-                      00085     
-                      00086 ;ADC INTERRUPT CONFIG
-180D   0021           00087     BANKSEL PIE1
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-180E   1710           00088     BSF     PIE1, ADIE                  ; enable ADC interrupt
-                      00089     
-                      00090 ;REGISTER CONFIG
-180F   002?           00091     BANKSEL MIN_WAV
-                      00092     INIT16  MIN_WAV, 0x1FF
-1810   30FF               M         MOVLW   low (0x1FF)
-1811   00??               M         MOVWF   (MIN_WAV)
-1812   3001               M         MOVLW   high (0x1FF)
-1813   00??               M         MOVWF   (MIN_WAV)+1
-1814   002?           00093     BANKSEL MAX_WAV
-                      00094     INIT16  MAX_WAV, 0x1FF
-1815   30FF               M         MOVLW   low (0x1FF)
-1816   00??               M         MOVWF   (MAX_WAV)
-1817   3001               M         MOVLW   high (0x1FF)
-1818   00??               M         MOVWF   (MAX_WAV)+1
-                      00095     CLR16   DELTA_T
-1819   01??               M         CLRF    DELTA_T
-181A   01??               M         CLRF    DELTA_T+1
-                      00096     
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE  7
+0001   018C           00101     CLRF    LATA
+0002   0020           00102     BANKSEL PORTA
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE  8
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00097 ;START ADC CONVERSION
-181B   0021           00098     BANKSEL ADCON0
+0003   160C           00103     BSF     PORTA, ADC_TRIS
+0004   0023           00104     BANKSEL ANSELA
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-181C   141D           00099     BSF     ADCON0, 0                   ; enable ADC
-                      00100     ACQ_DELAY                           ; acquisition delay
-181D   300E               M    MOVLW    0x0E
-181E                      M ACQ:
-181E   0B09               M     DECFSZ  WREG, W
-181F   2???               M     GOTO    ACQ
+0005   160C           00105     BSF     ANSELA, ADC_ANSEL
+                      00106 
+                      00107 ;ADC CONFIG
+0006   0021           00108     BANKSEL ADCON1
+                      00109     MOVLF   ADCON1, b'10000000'         ; right justified, Fosc/2, VDD ref
+0007   0021               M         BANKSEL ADCON1
+0008   3080               M         MOVLW   b'10000000'
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-1820   149D           00101     BSF     ADCON0, ADGO                ; start conversion
-                      00102     
-1821   0008           00103     RETURN
-                      00104     
-                      00105  
-                      00106 ;*******************************************************************************
-                      00107 ;                           EXTERN_INTERRUPT_SERV
-                      00108 ;*******************************************************************************
-1822                  00109 EXTERN_INTERRUPT_SERV:
-                      00110     ;TODO: determine analog characteristics, then start new adc conversion, clear flags
-                      00111 ;    BANKSEL ADRESH
-                      00112 ;    CPYFF   ADRESH, WDATA              ; copy high adc result to high wdata
-                      00113 ;    BANKSEL ADRESL
-                      00114 ;    CPYFF   ADRESL, WDATA+1            ; copy low adc result to high wdata
+0009   009E               M         MOVWF   ADCON1
+                      00110     MOVLF   ADCON0, b'00001100'         ; set output channel to AN3
+000A   0021               M         BANKSEL ADCON0
+000B   300C               M         MOVLW   b'00001100'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000C   009D               M         MOVWF   ADCON0
+                      00111     
+                      00112 ;ADC INTERRUPT CONFIG
+000D   0021           00113     BANKSEL PIE1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000E   1710           00114     BSF     PIE1, ADIE                  ; enable ADC interrupt
                       00115     
-                      00116     ; !!!! WITHIN_TRIGGER unit tests !!!!
-1822   0029           00117     BANKSEL T3CON
+                      00116 ;REGISTER CONFIG
+000F   002?           00117     BANKSEL MIN_WAV
+                      00118     INIT16  MIN_WAV, 0x1FF
+0010   30FF               M         MOVLW   low (0x1FF)
+0011   00??               M         MOVWF   (MIN_WAV)
+0012   3001               M         MOVLW   high (0x1FF)
+0013   00??               M         MOVWF   (MIN_WAV)+1
+0014   002?           00119     BANKSEL MAX_WAV
+                      00120     INIT16  MAX_WAV, 0x1FF
+0015   30FF               M         MOVLW   low (0x1FF)
+0016   00??               M         MOVWF   (MAX_WAV)
+0017   3001               M         MOVLW   high (0x1FF)
+0018   00??               M         MOVWF   (MAX_WAV)+1
+                      00121     CLR16   DELTA_T
+0019   01??               M         CLRF    DELTA_T
+001A   01??               M         CLRF    DELTA_T+1
+                      00122     INIT16  TGRH, 0x1FF
+001B   30FF               M         MOVLW   low (0x1FF)
+001C   00??               M         MOVWF   (TGRH)
+001D   3001               M         MOVLW   high (0x1FF)
+001E   00??               M         MOVWF   (TGRH)+1
+                      00123     ADDI16  TGRH, TRIGGER_OFF
+001F   303F               M         MOVLW   LOW (0x3F)
+0020   07??               M         ADDWF   TGRH,F
+0021   3000               M         MOVLW   HIGH (0x3F)
+0022   1803               M         BTFSC   STATUS,C
+0023   3001               M         MOVLW   (HIGH (0x3F)) + 1
+0024   07??               M         ADDWF   (TGRH)+1,F
+                      00124     INIT16  TGRL, 0x1FF
+0025   30FF               M         MOVLW   low (0x1FF)
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0026   00??               M         MOVWF   (TGRL)
+0027   3001               M         MOVLW   high (0x1FF)
+0028   00??               M         MOVWF   (TGRL)+1
+                      00125     SUBI16  TGRL, TRIGGER_OFF
+0029   303F               M         MOVLW   LOW (0x3F)
+002A   02??               M         SUBWF   (TGRL), F
+002B   3000               M         MOVLW   HIGH (0x3F)
+002C   1C03               M         BTFSS   STATUS, C
+002D   3001               M         MOVLW   (HIGH (0x3F))+1
+002E   02??               M         SUBWF   (TGRL)+1,F
+                      00126     
+                      00127     
+                      00128 ;START ADC CONVERSION
+002F   0021           00129     BANKSEL ADCON0
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-1823   1415           00118     BSF     T3CON, TMR3ON
-1824   002?           00119     BANKSEL WDATA
-                      00120     INIT16  WDATA, 0x202
-1825   3002               M         MOVLW   low (0x202)
-1826   00??               M         MOVWF   (WDATA)
-1827   3002               M         MOVLW   high (0x202)
-1828   00??               M         MOVWF   (WDATA)+1
-                      00121 ;    INIT16  WDATA, 0x1FC       ; 0x1FF +- 3        |   yes
-                      00122 ;    INIT16  WDATA, 0x22E    
-                      00123 ;    INIT16  WDATA, 0x1D0       ; 0x1FF +- 2F       |   yes
-                      00124 ;    INIT16  WDATA, 0x2FE
-                      00125 ;    INIT16  WDATA, 0x1B0       ; 0x1FF +- 4F       |   no
-                      00126 ;    INIT16  WDATA, 0x202       ; 0x3FF             |   no
-                      00127 ;    INIT16  WDATA, 0x000       ; 0x000             |   no
-                      00128 ;    INIT16  WDATA, 0x202       ; 0x1FF             |   yes
-                      00129    
-                      00130 ;TEST FOR NEW WAVE TROUGH
-1829   002?           00131     BANKSEL MIN_WAV
-                      00132     BCCZ                                ; clear Z and C  flags
-182A   1103               M         BCF         STATUS, Z
-182B   1003               M         BCF         STATUS, C
-                      00133     CMP16   WDATA, MIN_WAV
+0030   141D           00130     BSF     ADCON0, 0                   ; enable ADC
+                      00131     ACQ_DELAY                           ; acquisition delay
+0031   300E               M    MOVLW    0x0E
+0032                      M ACQ:
+0032   0B09               M     DECFSZ  WREG, W
+0033   2???               M     GOTO    ACQ
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0034   149D           00132     BSF     ADCON0, ADGO                ; start conversion
+                      00133     
+                      00134   
+                      00135 ;TODO: set colorize parameters
+0035   002?           00136     BANKSEL WDATA
+                      00137     INIT16  WDATA, D'55639'
+0036   3057               M         MOVLW   low (D'55639')
+0037   00??               M         MOVWF   (WDATA)
+0038   30D9               M         MOVLW   high (D'55639')
+0039   00??               M         MOVWF   (WDATA)+1
+003A   002?           00138     BANKSEL RS1
+                      00139     MOVLF   RS1, 4
+003B   002?               M         BANKSEL RS1
+003C   3004               M         MOVLW   4
+003D   00??               M         MOVWF   RS1
+                      00140     MOVLF   RS2, 5
+003E   002?               M         BANKSEL RS2
+003F   3005               M         MOVLW   5
+0040   00??               M         MOVWF   RS2
+                      00141     INIT16  R1, D'12288'
+0041   3000               M         MOVLW   low (D'12288')
+0042   00??               M         MOVWF   (R1)
+0043   3030               M         MOVLW   high (D'12288')
+0044   00??               M         MOVWF   (R1)+1
+                      00142     INIT16  R2, D'16384'
+0045   3000               M         MOVLW   low (D'16384')
+0046   00??               M         MOVWF   (R2)
+0047   3040               M         MOVLW   high (D'16384')
+0048   00??               M         MOVWF   (R2)+1
+                      00143     INIT16  R3, D'49152'
+0049   3000               M         MOVLW   low (D'49152')
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+004A   00??               M         MOVWF   (R3)
+004B   30C0               M         MOVLW   high (D'49152')
+004C   00??               M         MOVWF   (R3)+1
+004D   2???           00144     CALL    SET_WRGB
+                      00145     
+004E   0008           00146     RETURN
+                      00147     
+                      00148  
+                      00149 ;*******************************************************************************
+                      00150 ;                           EXTERN_INTERRUPT_SERV
+                      00151 ;*******************************************************************************
+004F                  00152 EXTERN_INTERRUPT_SERV:
+                      00153 ;    BANKSEL ADRESH
+                      00154 ;    CPYFF   ADRESH, WDATA              ; copy high adc result to high wdata
+                      00155 ;    BANKSEL ADRESL
+                      00156 ;    CPYFF   ADRESL, WDATA+1            ; copy low adc result to high wdata
+                      00157     
+                      00158     ; !!!! WITHIN_TRIGGER unit tests !!!!
+                      00159 ;    BANKSEL T3CON
+                      00160 ;    BSF            T3CON, TMR3ON
+004F   002?           00161     BANKSEL WDATA
+                      00162 ;    INIT16  WDATA, 0x202
+                      00163 ;    INIT16  WDATA, 0x1FC       ; 0x1FF +- 3        |   yes
+                      00164 ;    INIT16  WDATA, 0x22E    
+                      00165 ;    INIT16  WDATA, 0x1D0       ; 0x1FF +- 2F       |   yes
+                      00166 ;    INIT16  WDATA, 0x2FE
+                      00167 ;    INIT16  WDATA, 0x1B0       ; 0x1FF +- 4F       |   no
+                      00168 ;    INIT16  WDATA, 0x3FF       ; 0x3FF             |   no
+                      00169 ;    INIT16  WDATA, 0x000       ; 0x000             |   no
+                      00170     INIT16  WDATA, 0x1FF        ; 0x1FF             |   yes
+0050   30FF               M         MOVLW   low (0x1FF)
+0051   00??               M         MOVWF   (WDATA)
+0052   3001               M         MOVLW   high (0x1FF)
+0053   00??               M         MOVWF   (WDATA)+1
+                      00171    
+                      00172 ;TEST FOR NEW WAVE TROUGH
+0054   002?           00173     BANKSEL MIN_WAV
+                      00174     CLRSTAT                             ; clear Z and C  flags
+0055   1103               M         BCF     STATUS, Z
+0056   1003               M         BCF     STATUS, C
+0057   1083               M         BCF     STATUS, DC
+                      00175     CMP16   WDATA, MIN_WAV
                           M         MOV16   WDATA, _REG_A
-182C   08??               M         MOVF    WDATA,W
-182D   00FE               M         MOVWF   _REG_A
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE  8
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-182E   08??               M         MOVF    WDATA+1,W
-182F   00FF               M         MOVWF   _REG_A+1
+0058   002?               M         BANKSEL WDATA
+0059   08??               M         MOVF    WDATA,W
+005A   0020               M         BANKSEL _REG_A
+005B   00FE               M         MOVWF   _REG_A
+005C   002?               M         BANKSEL WDATA
+005D   08??               M         MOVF    WDATA+1,W
+005E   0020               M         BANKSEL _REG_A
+005F   00FF               M         MOVWF   _REG_A+1
                           M         SUB16   _REG_A,MIN_WAV
-1830   08??               M         MOVF    MIN_WAV,W     ; Get low byte of subtrahend
-1831   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
-1832   08??               M         MOVF    MIN_WAV+1,W   ; Now get high byte of subtrahend
-1833   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
-1834   0A??               M         INCF    MIN_WAV+1,W   ; decrement high byte of dst we inc src
-1835   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
-1836   087E               M         MOVF    _REG_A,W
-1837   047F               M         IORWF   _REG_A+1,W
-1838   1C03           00134     BTFSS   STATUS, C                   ; test if WDATA < MIN_WAV, skip if isn't
-1839   2???           00135     GOTO    SET_TROUGH
-183A   2???           00136     GOTO    END_TEST1
-183B                  00137 SET_TROUGH:
-                      00138     MOV16   WDATA, MIN_WAV              ; set new MIN_WAV to new WDATA
-183B   08??               M         MOVF    WDATA,W
-183C   00??               M         MOVWF   MIN_WAV
-183D   08??               M         MOVF    WDATA+1,W
-183E   00??               M         MOVWF   MIN_WAV+1
-183F                  00139 END_TEST1:
-                      00140     
-                      00141 ;TEST FOR NEW WAVE PEAK
-183F   002?           00142     BANKSEL MAX_WAV
-                      00143     BCCZ                                ; clear Z and C  flags
-1840   1103               M         BCF         STATUS, Z
-1841   1003               M         BCF         STATUS, C
-                      00144     CMP16   MAX_WAV, WDATA
-                          M         MOV16   MAX_WAV, _REG_A
-1842   08??               M         MOVF    MAX_WAV,W
-1843   00FE               M         MOVWF   _REG_A
-1844   08??               M         MOVF    MAX_WAV+1,W
-1845   00FF               M         MOVWF   _REG_A+1
-                          M         SUB16   _REG_A,WDATA
-1846   08??               M         MOVF    WDATA,W       ; Get low byte of subtrahend
-1847   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
-1848   08??               M         MOVF    WDATA+1,W     ; Now get high byte of subtrahend
-1849   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
-184A   0A??               M         INCF    WDATA+1,W     ; decrement high byte of dst we inc src
-184B   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
-184C   087E               M         MOVF    _REG_A,W
-184D   047F               M         IORWF   _REG_A+1,W
-184E   1C03           00145     BTFSS   STATUS, C                   ; test if WDATA > MAX_WAV, skip if isn't
-184F   2???           00146     GOTO    SET_PEAK
-1850   2???           00147     GOTO    END_TEST2
-1851                  00148 SET_PEAK:
-                      00149     MOV16   WDATA, MAX_WAV              ; set new MAX_WAV to new WDATA
-1851   08??               M         MOVF    WDATA,W
-1852   00??               M         MOVWF   MAX_WAV
-1853   08??               M         MOVF    WDATA+1,W
-1854   00??               M         MOVWF   MAX_WAV+1
-1855                  00150 END_TEST2:
-                      00151      
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE  9
+0060   08??               M         MOVF    MIN_WAV,W     ; Get low byte of subtrahend
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 11
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00152 ;TEST IF WITHIN TRIGGER WINDOW
-1855   0029           00153     BANKSEL T3CON
-                      00154     BCCZ                                ; clear Z and C  flags
-1856   1103               M         BCF         STATUS, Z
-1857   1003               M         BCF         STATUS, C
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-1858   1C15           00155     BTFSS   T3CON, TMR3ON               ; test whether there has already been a previous trigger
-1859   2???           00156     GOTO    FIRST_TRGR
-185A   2???           00157     GOTO    SECOND_TRGR
-185B                  00158 FIRST_TRGR:                             ; if first trigger, start timer3 to measure cycles between trigg
-                            ers
-                      00159     WITHIN_TRIGGER  WDATA               ; C will be set if within trigger window
-                          M         BCCZ                        ; clear Z and C flags
-185B   1103               M         BCF         STATUS, Z
-185C   1003               M         BCF         STATUS, C
-                          M         CMP16   TGRL, WDATA         ; test if above lower trigger - C will be clear
-                          M         MOV16   TGRL, _REG_A
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-185D   0840               M         MOVF    TGRL,W
-185E   00FE               M         MOVWF   _REG_A
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-185F   0841               M         MOVF    TGRL+1,W
-1860   00FF               M         MOVWF   _REG_A+1
-                          M         SUB16   _REG_A,WDATA
-1861   08??               M         MOVF    WDATA,W       ; Get low byte of subtrahend
-1862   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
-1863   08??               M         MOVF    WDATA+1,W     ; Now get high byte of subtrahend
-1864   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
-1865   0A??               M         INCF    WDATA+1,W     ; decrement high byte of dst we inc src
-1866   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
-1867   087E               M         MOVF    _REG_A,W
-1868   047F               M         IORWF   _REG_A+1,W
-1869   1C03               M         BTFSS   STATUS, C           ; exits macro if C set = not above TGRL
-                          M         CMP16   TGRH, WDATA         ; will set c if below TGRH
-                          M         MOV16   TGRH, _REG_A
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-186A   083E               M         MOVF    TGRH,W
-186B   00FE               M         MOVWF   _REG_A
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-186C   083F               M         MOVF    TGRH+1,W
-186D   00FF               M         MOVWF   _REG_A+1
-                          M         SUB16   _REG_A,WDATA
-186E   08??               M         MOVF    WDATA,W       ; Get low byte of subtrahend
-186F   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
-1870   08??               M         MOVF    WDATA+1,W     ; Now get high byte of subtrahend
-1871   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
-1872   0A??               M         INCF    WDATA+1,W     ; decrement high byte of dst we inc src
-1873   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
-1874   087E               M         MOVF    _REG_A,W
-1875   047F               M         IORWF   _REG_A+1,W
-                          M         
-1876   0029           00160     BANKSEL T3CON
-1877   1803           00161     BTFSC   STATUS, C
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 10
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-1878   1415           00162     BSF     T3CON, TMR3ON               ; start timer3 if within trigger window
-1879   2???           00163     GOTO    END_TRGR_TEST               ; end trigger window test
-187A                  00164 SECOND_TRGR:
-                      00165     WITHIN_TRIGGER  WDATA                       ; C will be set if within trigger window
-                          M         BCCZ                        ; clear Z and C flags
-187A   1103               M         BCF         STATUS, Z
-187B   1003               M         BCF         STATUS, C
-                          M         CMP16   TGRL, WDATA         ; test if above lower trigger - C will be clear
-                          M         MOV16   TGRL, _REG_A
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-187C   0840               M         MOVF    TGRL,W
-187D   00FE               M         MOVWF   _REG_A
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-187E   0841               M         MOVF    TGRL+1,W
-187F   00FF               M         MOVWF   _REG_A+1
-                          M         SUB16   _REG_A,WDATA
-1880   08??               M         MOVF    WDATA,W       ; Get low byte of subtrahend
-1881   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
-1882   08??               M         MOVF    WDATA+1,W     ; Now get high byte of subtrahend
-1883   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
-1884   0A??               M         INCF    WDATA+1,W     ; decrement high byte of dst we inc src
-1885   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
-1886   087E               M         MOVF    _REG_A,W
-1887   047F               M         IORWF   _REG_A+1,W
-1888   1C03               M         BTFSS   STATUS, C           ; exits macro if C set = not above TGRL
-                          M         CMP16   TGRH, WDATA         ; will set c if below TGRH
-                          M         MOV16   TGRH, _REG_A
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-1889   083E               M         MOVF    TGRH,W
-188A   00FE               M         MOVWF   _REG_A
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-188B   083F               M         MOVF    TGRH+1,W
-188C   00FF               M         MOVWF   _REG_A+1
-                          M         SUB16   _REG_A,WDATA
-188D   08??               M         MOVF    WDATA,W       ; Get low byte of subtrahend
-188E   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
-188F   08??               M         MOVF    WDATA+1,W     ; Now get high byte of subtrahend
-1890   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
-1891   0A??               M         INCF    WDATA+1,W     ; decrement high byte of dst we inc src
-1892   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
-1893   087E               M         MOVF    _REG_A,W
-1894   047F               M         IORWF   _REG_A+1,W
-                          M         
-1895   0029           00166     BANKSEL T3CON
-1896   1C03           00167     BTFSS   STATUS, C                   ; end test if not within window
-1897   2???           00168     GOTO    END_TRGR_TEST               ; end trigger window test
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-1898   1015           00169     BCF     T3CON, TMR3ON               ; turn off timer3
-                      00170     CPYFF   TMR3H, DELTA_T              ; copy timer3 data to DELAT_T
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-1899   0814               M         MOVF    TMR3H, W
-189A   00??               M         MOVWF   DELTA_T
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 11
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-                      00171     CPYFF   TMR3L, DELTA_T+1
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-189B   0813               M         MOVF    TMR3L, W
-189C   00??               M         MOVWF   DELTA_T+1
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-189D   0193           00172     CLRF    TMR3L                       ; clear timer3
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-189E   0194           00173     CLRF    TMR3H   
-189F                  00174 END_TRGR_TEST:
-                      00175     
-                      00176 ;CLEANUP
-189F   0020           00177     BANKSEL PIR1
-18A0   1310           00178     BCF     PIR1, ADIF                  ; clear ADC interrupt flag
-                      00179     
-18A1   0008           00180     RETURN
-                      00181     
+0061   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+0062   08??               M         MOVF    MIN_WAV+1,W   ; Now get high byte of subtrahend
+0063   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+0064   0A??               M         INCF    MIN_WAV+1,W   ; decrement high byte of dst we inc src
+0065   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+0066   087E               M         MOVF    _REG_A,W
+0067   047F               M         IORWF   _REG_A+1,W
+0068   1C03           00176     BTFSS   STATUS, C                   ; test if WDATA < MIN_WAV, skip if isn't
+0069   2???           00177     GOTO    SET_TROUGH
+006A   2???           00178     GOTO    END_TEST1
+006B                  00179 SET_TROUGH:
+                      00180     MOV16   WDATA, MIN_WAV              ; set new MIN_WAV to new WDATA
+006B   002?               M         BANKSEL WDATA
+006C   08??               M         MOVF    WDATA,W
+006D   002?               M         BANKSEL MIN_WAV
+006E   00??               M         MOVWF   MIN_WAV
+006F   002?               M         BANKSEL WDATA
+0070   08??               M         MOVF    WDATA+1,W
+0071   002?               M         BANKSEL MIN_WAV
+0072   00??               M         MOVWF   MIN_WAV+1
+0073                  00181 END_TEST1:
                       00182     
-                      00183     
-                      00184 
-                      00185     
-                      00186 ;*******************************************************************************
-                      00187 ;                                DO_RENDER
-                      00188 ;*******************************************************************************
-18A2                  00189 DO_RENDER:
-                      00190     ;TODO: determine color based on analog characteristics
-                      00191     
-18A2   0008           00192     RETURN
-                      00193     
-                      00194     
-                      00195     
-18A3                  00196 MOV_WDATA_MIN:
-                      00197     MOV16   WDATA, MAX_WAV              ; set new MAX_WAV to new WDATA
-18A3   08??               M         MOVF    WDATA,W
-18A4   00??               M         MOVWF   MAX_WAV
-18A5   08??               M         MOVF    WDATA+1,W
-18A6   00??               M         MOVWF   MAX_WAV+1
-18A7   0008           00198     RETURN
-                      00199     
-                      00200     
-                      00201     
-                      00202     
-                      00203     
-                      00204     
-                      00205     
-                      00206     
-                      00207     
-                      00208     END
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 12
+                      00183 ;TEST FOR NEW WAVE PEAK
+0073   002?           00184     BANKSEL MAX_WAV
+                      00185     CLRSTAT                             ; clear Z and C  flags
+0074   1103               M         BCF     STATUS, Z
+0075   1003               M         BCF     STATUS, C
+0076   1083               M         BCF     STATUS, DC
+                      00186     CMP16   MAX_WAV, WDATA
+                          M         MOV16   MAX_WAV, _REG_A
+0077   002?               M         BANKSEL MAX_WAV
+0078   08??               M         MOVF    MAX_WAV,W
+0079   0020               M         BANKSEL _REG_A
+007A   00FE               M         MOVWF   _REG_A
+007B   002?               M         BANKSEL MAX_WAV
+007C   08??               M         MOVF    MAX_WAV+1,W
+007D   0020               M         BANKSEL _REG_A
+007E   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,WDATA
+007F   08??               M         MOVF    WDATA,W       ; Get low byte of subtrahend
+0080   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+0081   08??               M         MOVF    WDATA+1,W     ; Now get high byte of subtrahend
+0082   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+0083   0A??               M         INCF    WDATA+1,W     ; decrement high byte of dst we inc src
+0084   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+0085   087E               M         MOVF    _REG_A,W
+0086   047F               M         IORWF   _REG_A+1,W
+0087   1C03           00187     BTFSS   STATUS, C                   ; test if WDATA > MAX_WAV, skip if isn't
+0088   2???           00188     GOTO    SET_PEAK
+0089   2???           00189     GOTO    END_TEST2
+008A                  00190 SET_PEAK:
+                      00191     MOV16   WDATA, MAX_WAV              ; set new MAX_WAV to new WDATA
+008A   002?               M         BANKSEL WDATA
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+008B   08??               M         MOVF    WDATA,W
+008C   002?               M         BANKSEL MAX_WAV
+008D   00??               M         MOVWF   MAX_WAV
+008E   002?               M         BANKSEL WDATA
+008F   08??               M         MOVF    WDATA+1,W
+0090   002?               M         BANKSEL MAX_WAV
+0091   00??               M         MOVWF   MAX_WAV+1
+0092                  00192 END_TEST2:
+                      00193      
+                      00194 ;TEST IF WITHIN TRIGGER WINDOW
+0092   0029           00195     BANKSEL T3CON
+                      00196     CLRSTAT                             ; clear Z and C  flags
+0093   1103               M         BCF     STATUS, Z
+0094   1003               M         BCF     STATUS, C
+0095   1083               M         BCF     STATUS, DC
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0096   1C15           00197     BTFSS   T3CON, TMR3ON               ; test whether there has already been a previous trigger
+0097   2???           00198     GOTO    FIRST_TRGR
+0098   2???           00199     GOTO    SECOND_TRGR
+0099                  00200 FIRST_TRGR:                             ; if first trigger, start timer3 to measure cycles between trigg
+                            ers
+0099   002?           00201     BANKSEL WDATA
+                      00202     CLRSTAT                             ; clear Z and C flags
+009A   1103               M         BCF     STATUS, Z
+009B   1003               M         BCF     STATUS, C
+009C   1083               M         BCF     STATUS, DC
+                      00203     CMP16   TGRL, WDATA                 ; test if above lower trigger - C will be clear
+                          M         MOV16   TGRL, _REG_A
+009D   002?               M         BANKSEL TGRL
+009E   08??               M         MOVF    TGRL,W
+009F   0020               M         BANKSEL _REG_A
+00A0   00FE               M         MOVWF   _REG_A
+00A1   002?               M         BANKSEL TGRL
+00A2   08??               M         MOVF    TGRL+1,W
+00A3   0020               M         BANKSEL _REG_A
+00A4   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,WDATA
+00A5   08??               M         MOVF    WDATA,W       ; Get low byte of subtrahend
+00A6   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+00A7   08??               M         MOVF    WDATA+1,W     ; Now get high byte of subtrahend
+00A8   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+00A9   0A??               M         INCF    WDATA+1,W     ; decrement high byte of dst we inc src
+00AA   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+00AB   087E               M         MOVF    _REG_A,W
+00AC   047F               M         IORWF   _REG_A+1,W
+00AD   1803           00204     BTFSC   STATUS, C                   ; exits macro if C set = not above TGRL
+00AE   2???           00205     GOTO    $+6
+                      00206     CMP16   TGRH, WDATA                 ; will set c if below TGRH
+                          M         MOV16   TGRH, _REG_A
+00AF   002?               M         BANKSEL TGRH
+00B0   08??               M         MOVF    TGRH,W
+00B1   0020               M         BANKSEL _REG_A
+00B2   00FE               M         MOVWF   _REG_A
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00B3   002?               M         BANKSEL TGRH
+00B4   08??               M         MOVF    TGRH+1,W
+00B5   0020               M         BANKSEL _REG_A
+00B6   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,WDATA
+00B7   08??               M         MOVF    WDATA,W       ; Get low byte of subtrahend
+00B8   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+00B9   08??               M         MOVF    WDATA+1,W     ; Now get high byte of subtrahend
+00BA   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+00BB   0A??               M         INCF    WDATA+1,W     ; decrement high byte of dst we inc src
+00BC   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+00BD   087E               M         MOVF    _REG_A,W
+00BE   047F               M         IORWF   _REG_A+1,W
+                      00207     ;WITHIN_WINDOW  WDATA               ; C will be set if within trigger window
+00BF   0029           00208     BANKSEL T3CON
+00C0   1803           00209     BTFSC   STATUS, C
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00C1   1415           00210     BSF     T3CON, TMR3ON               ; start timer3 if within trigger window
+00C2   2???           00211     GOTO    END_TRGR_TEST               ; end trigger window test
+00C3                  00212 SECOND_TRGR:
+00C3   002?           00213     BANKSEL WDATA
+                      00214     CLRSTAT                             ; clear Z and C flags
+00C4   1103               M         BCF     STATUS, Z
+00C5   1003               M         BCF     STATUS, C
+00C6   1083               M         BCF     STATUS, DC
+                      00215     CMP16   TGRL, WDATA                 ; test if above lower trigger - C will be clear
+                          M         MOV16   TGRL, _REG_A
+00C7   002?               M         BANKSEL TGRL
+00C8   08??               M         MOVF    TGRL,W
+00C9   0020               M         BANKSEL _REG_A
+00CA   00FE               M         MOVWF   _REG_A
+00CB   002?               M         BANKSEL TGRL
+00CC   08??               M         MOVF    TGRL+1,W
+00CD   0020               M         BANKSEL _REG_A
+00CE   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,WDATA
+00CF   08??               M         MOVF    WDATA,W       ; Get low byte of subtrahend
+00D0   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+00D1   08??               M         MOVF    WDATA+1,W     ; Now get high byte of subtrahend
+00D2   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+00D3   0A??               M         INCF    WDATA+1,W     ; decrement high byte of dst we inc src
+00D4   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+00D5   087E               M         MOVF    _REG_A,W
+00D6   047F               M         IORWF   _REG_A+1,W
+00D7   1803           00216     BTFSC   STATUS, C                   ; exits macro if C set = not above TGRL
+00D8   2???           00217     GOTO    $+6
+                      00218     CMP16   TGRH, WDATA                 ; will set c if below TGRH
+                          M         MOV16   TGRH, _REG_A
+00D9   002?               M         BANKSEL TGRH
+00DA   08??               M         MOVF    TGRH,W
+00DB   0020               M         BANKSEL _REG_A
+00DC   00FE               M         MOVWF   _REG_A
+00DD   002?               M         BANKSEL TGRH
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00DE   08??               M         MOVF    TGRH+1,W
+00DF   0020               M         BANKSEL _REG_A
+00E0   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,WDATA
+00E1   08??               M         MOVF    WDATA,W       ; Get low byte of subtrahend
+00E2   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+00E3   08??               M         MOVF    WDATA+1,W     ; Now get high byte of subtrahend
+00E4   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+00E5   0A??               M         INCF    WDATA+1,W     ; decrement high byte of dst we inc src
+00E6   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+00E7   087E               M         MOVF    _REG_A,W
+00E8   047F               M         IORWF   _REG_A+1,W
+                      00219     ;WITHIN_WINDOW  WDATA               ; C will be set if within trigger window
+00E9   0029           00220     BANKSEL T3CON
+00EA   1C03           00221     BTFSS   STATUS, C                   ; end test if not within window
+00EB   2???           00222     GOTO    END_TRGR_TEST               ; end trigger window test
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00EC   1015           00223     BCF     T3CON, TMR3ON               ; turn off timer3
+                      00224     CPYFF   TMR3H, DELTA_T              ; copy timer3 data to DELAT_T
+00ED   0029               M         BANKSEL TMR3H
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00EE   0814               M         MOVF    TMR3H, W
+00EF   002?               M         BANKSEL DELTA_T
+00F0   00??               M         MOVWF   DELTA_T
+                      00225     CPYFF   TMR3L, DELTA_T+1
+00F1   0029               M         BANKSEL TMR3L
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00F2   0813               M         MOVF    TMR3L, W
+00F3   002?               M         BANKSEL DELTA_T+1
+00F4   00??               M         MOVWF   DELTA_T+1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00F5   0193           00226     CLRF    TMR3L                       ; clear timer3
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00F6   0194           00227     CLRF    TMR3H   
+00F7                  00228 END_TRGR_TEST:
+                      00229     
+                      00230 ;CLEANUP
+00F7   0020           00231     BANKSEL PIR1
+00F8   1310           00232     BCF     PIR1, ADIF                  ; clear ADC interrupt flag
+                      00233     
+00F9   0008           00234     RETURN
+                      00235     
+                      00236     
+                      00237     
+                      00238 
+                      00239     
+                      00240 ;*******************************************************************************
+                      00241 ;                                DO_RENDER
+                      00242 ;*******************************************************************************
+00FA                  00243 DO_RENDER:
+                      00244     
+                      00245     
+00FA   0008           00246     RETURN
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00247     
+                      00248 
+                      00249     
+                      00250     
+00FB                  00251 SET_WRGB:
+                      00252 
+                      00253 ; GREEN PIECEWISE FUNCTION    
+                      00254 ;   | 0x00              , f <= G1
+                      00255 ;   | GS1(f-G1)         , G1 < f <= G2
+                      00256 ;   | 0xFF              , G2 < f <= G3
+                      00257 ;   | 0xFF - GS1(f-G3)  , G3 < f <= G4
+                      00258 ;   | 0x00              , f > G4
+                      00259 ;
+00FB                  00260 SET_GREEN:
+00FB   1003           00261     BCF     STATUS, C
+00FC   002?           00262     BANKSEL WDATA
+                      00263     CMP16   WDATA, G1                   ; check for first range in piecewise
+                          M         MOV16   WDATA, _REG_A
+00FD   002?               M         BANKSEL WDATA
+00FE   08??               M         MOVF    WDATA,W
+00FF   0020               M         BANKSEL _REG_A
+0100   00FE               M         MOVWF   _REG_A
+0101   002?               M         BANKSEL WDATA
+0102   08??               M         MOVF    WDATA+1,W
+0103   0020               M         BANKSEL _REG_A
+0104   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,G1
+0105   08??               M         MOVF    G1,W          ; Get low byte of subtrahend
+0106   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+0107   08??               M         MOVF    G1+1,W        ; Now get high byte of subtrahend
+0108   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+0109   0A??               M         INCF    G1+1,W        ; decrement high byte of dst we inc src
+010A   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+010B   087E               M         MOVF    _REG_A,W
+010C   047F               M         IORWF   _REG_A+1,W
+010D   1C03           00264     BTFSS   STATUS, C                   
+010E   2???           00265     GOTO    G_1                         ; within first range
+010F   2???           00266     GOTO    G_12                        ; MIGHT be in the next range
+0110                  00267 G_1:    ; first range in piecewise
+0110   002?           00268     BANKSEL WRGB
+                      00269     MOVLF   WRGB, 0x00
+0111   002?               M         BANKSEL WRGB
+0112   3000               M         MOVLW   0x00
+0113   00??               M         MOVWF   WRGB
+0114   2???           00270     GOTO    SET_RED
+                      00271     
+0115                  00272 G_12:   ; second range in piecewise
+0115   1003           00273     BCF     STATUS, C
+0116   002?           00274     BANKSEL WDATA
+                      00275     CMP16   WDATA, G2
+                          M         MOV16   WDATA, _REG_A
+0117   002?               M         BANKSEL WDATA
+0118   08??               M         MOVF    WDATA,W
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 16
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0119   0020               M         BANKSEL _REG_A
+011A   00FE               M         MOVWF   _REG_A
+011B   002?               M         BANKSEL WDATA
+011C   08??               M         MOVF    WDATA+1,W
+011D   0020               M         BANKSEL _REG_A
+011E   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,G2
+011F   08??               M         MOVF    G2,W          ; Get low byte of subtrahend
+0120   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+0121   08??               M         MOVF    G2+1,W        ; Now get high byte of subtrahend
+0122   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+0123   0A??               M         INCF    G2+1,W        ; decrement high byte of dst we inc src
+0124   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+0125   087E               M         MOVF    _REG_A,W
+0126   047F               M         IORWF   _REG_A+1,W
+0127   1803           00276     BTFSC   STATUS, C   
+0128   2???           00277      GOTO    G_23                       ; might be in the next range 
+                      00278     
+                      00279     MOV16   WDATA, TEMP16               ; in this range
+0129   002?               M         BANKSEL WDATA
+012A   08??               M         MOVF    WDATA,W
+012B   002?               M         BANKSEL TEMP16
+012C   00??               M         MOVWF   TEMP16
+012D   002?               M         BANKSEL WDATA
+012E   08??               M         MOVF    WDATA+1,W
+012F   002?               M         BANKSEL TEMP16
+0130   00??               M         MOVWF   TEMP16+1
+                      00280     SUB16   TEMP16, G3                  ; (f - G1)
+0131   08??               M         MOVF    G3,W          ; Get low byte of subtrahend
+0132   02??               M         SUBWF   TEMP16,F      ; Subtract DST(low) - SRC(low)
+0133   08??               M         MOVF    G3+1,W        ; Now get high byte of subtrahend
+0134   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+0135   0A??               M         INCF    G3+1,W        ; decrement high byte of dst we inc src
+0136   02??               M         SUBWF   TEMP16+1,F    ; Subtract the high byte and we're done
+                      00281     RSF16   TEMP16, GS1                 ; (f - G1) / (1/m >> GS)
+                          M         MOV16   TEMP16, SHIFTNUM
+0137   002?               M         BANKSEL TEMP16
+0138   08??               M         MOVF    TEMP16,W
+0139   002?               M         BANKSEL SHIFTNUM
+013A   00??               M         MOVWF   SHIFTNUM
+013B   002?               M         BANKSEL TEMP16
+013C   08??               M         MOVF    TEMP16+1,W
+013D   002?               M         BANKSEL SHIFTNUM
+013E   00??               M         MOVWF   SHIFTNUM+1
+013F   002?               M         BANKSEL GS1
+0140   08??               M         MOVFW   GS1
+0141   3180               M         PAGESEL RSHIFT16
+0142   2???               M         CALL    RSHIFT16
+                          M         MOV16   SHIFTNUM, TEMP16
+0143   002?               M         BANKSEL SHIFTNUM
+0144   08??               M         MOVF    SHIFTNUM,W
+0145   002?               M         BANKSEL TEMP16
+0146   00??               M         MOVWF   TEMP16
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 17
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0147   002?               M         BANKSEL SHIFTNUM
+0148   08??               M         MOVF    SHIFTNUM+1,W
+0149   002?               M         BANKSEL TEMP16
+014A   00??               M         MOVWF   TEMP16+1
+014B   002?           00282     BANKSEL WRGB
+                      00283     CPYFF   TEMP16, WRGB                ; WRGB in GRB format
+014C   002?               M         BANKSEL TEMP16
+014D   08??               M         MOVF    TEMP16, W
+014E   002?               M         BANKSEL WRGB
+014F   00??               M         MOVWF   WRGB
+0150   2???           00284     GOTO    SET_RED
+                      00285     
+0151                  00286 G_23:   ; third range in piecewise
+0151   1003           00287     BCF     STATUS, C
+0152   002?           00288     BANKSEL WDATA
+                      00289     CMP16   WDATA, G3
+                          M         MOV16   WDATA, _REG_A
+0153   002?               M         BANKSEL WDATA
+0154   08??               M         MOVF    WDATA,W
+0155   0020               M         BANKSEL _REG_A
+0156   00FE               M         MOVWF   _REG_A
+0157   002?               M         BANKSEL WDATA
+0158   08??               M         MOVF    WDATA+1,W
+0159   0020               M         BANKSEL _REG_A
+015A   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,G3
+015B   08??               M         MOVF    G3,W          ; Get low byte of subtrahend
+015C   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+015D   08??               M         MOVF    G3+1,W        ; Now get high byte of subtrahend
+015E   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+015F   0A??               M         INCF    G3+1,W        ; decrement high byte of dst we inc src
+0160   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+0161   087E               M         MOVF    _REG_A,W
+0162   047F               M         IORWF   _REG_A+1,W
+0163   1803           00290     BTFSC   STATUS, C                   ; might be in next range 
+0164   2???           00291      GOTO    G_34
+                      00292     
+0165   002?           00293     BANKSEL WRGB                        ; in this range 
+                      00294     MOVLF   WRGB, 0xFF
+0166   002?               M         BANKSEL WRGB
+0167   30FF               M         MOVLW   0xFF
+0168   00??               M         MOVWF   WRGB
+0169   2???           00295     GOTO    SET_RED
+                      00296     
+016A                  00297 G_34:   ; fourth range in piecewise
+016A   1003           00298     BCF     STATUS, C
+016B   002?           00299     BANKSEL WDATA
+                      00300     CMP16   WDATA, G2
+                          M         MOV16   WDATA, _REG_A
+016C   002?               M         BANKSEL WDATA
+016D   08??               M         MOVF    WDATA,W
+016E   0020               M         BANKSEL _REG_A
+016F   00FE               M         MOVWF   _REG_A
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 18
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0170   002?               M         BANKSEL WDATA
+0171   08??               M         MOVF    WDATA+1,W
+0172   0020               M         BANKSEL _REG_A
+0173   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,G2
+0174   08??               M         MOVF    G2,W          ; Get low byte of subtrahend
+0175   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+0176   08??               M         MOVF    G2+1,W        ; Now get high byte of subtrahend
+0177   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+0178   0A??               M         INCF    G2+1,W        ; decrement high byte of dst we inc src
+0179   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+017A   087E               M         MOVF    _REG_A,W
+017B   047F               M         IORWF   _REG_A+1,W
+017C   1803           00301     BTFSC   STATUS, C   
+017D   2???           00302      GOTO    G_4                        ; it is in the fifth range
+                      00303     
+                      00304     MOV16   WDATA, TEMP16               ; in this range
+017E   002?               M         BANKSEL WDATA
+017F   08??               M         MOVF    WDATA,W
+0180   002?               M         BANKSEL TEMP16
+0181   00??               M         MOVWF   TEMP16
+0182   002?               M         BANKSEL WDATA
+0183   08??               M         MOVF    WDATA+1,W
+0184   002?               M         BANKSEL TEMP16
+0185   00??               M         MOVWF   TEMP16+1
+                      00305     SUB16   TEMP16, G1                  ; (f - G1)
+0186   08??               M         MOVF    G1,W          ; Get low byte of subtrahend
+0187   02??               M         SUBWF   TEMP16,F      ; Subtract DST(low) - SRC(low)
+0188   08??               M         MOVF    G1+1,W        ; Now get high byte of subtrahend
+0189   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+018A   0A??               M         INCF    G1+1,W        ; decrement high byte of dst we inc src
+018B   02??               M         SUBWF   TEMP16+1,F    ; Subtract the high byte and we're done
+                      00306     RSF16   TEMP16, GS2                 ; (f - G1) / (1/m >> GS)
+                          M         MOV16   TEMP16, SHIFTNUM
+018C   002?               M         BANKSEL TEMP16
+018D   08??               M         MOVF    TEMP16,W
+018E   002?               M         BANKSEL SHIFTNUM
+018F   00??               M         MOVWF   SHIFTNUM
+0190   002?               M         BANKSEL TEMP16
+0191   08??               M         MOVF    TEMP16+1,W
+0192   002?               M         BANKSEL SHIFTNUM
+0193   00??               M         MOVWF   SHIFTNUM+1
+0194   002?               M         BANKSEL GS2
+0195   08??               M         MOVFW   GS2
+0196   3180               M         PAGESEL RSHIFT16
+0197   2???               M         CALL    RSHIFT16
+                          M         MOV16   SHIFTNUM, TEMP16
+0198   002?               M         BANKSEL SHIFTNUM
+0199   08??               M         MOVF    SHIFTNUM,W
+019A   002?               M         BANKSEL TEMP16
+019B   00??               M         MOVWF   TEMP16
+019C   002?               M         BANKSEL SHIFTNUM
+019D   08??               M         MOVF    SHIFTNUM+1,W
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 19
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+019E   002?               M         BANKSEL TEMP16
+019F   00??               M         MOVWF   TEMP16+1
+                      00307     MOVLF   TEMP8, 0xFF
+01A0   002?               M         BANKSEL TEMP8
+01A1   30FF               M         MOVLW   0xFF
+01A2   00??               M         MOVWF   TEMP8
+01A3   08??           00308     MOVFW   TEMP16
+01A4   02??           00309     SUBWF   TEMP8, F
+01A5   002?           00310     BANKSEL WRGB
+                      00311     CPYFF   TEMP8, WRGB                 ; WRGB in GRB format
+01A6   002?               M         BANKSEL TEMP8
+01A7   08??               M         MOVF    TEMP8, W
+01A8   002?               M         BANKSEL WRGB
+01A9   00??               M         MOVWF   WRGB
+01AA   2???           00312     GOTO    SET_RED
+                      00313     
+01AB                  00314 G_4:    ; fifth range in piecewise
+01AB   002?           00315     BANKSEL WRGB
+                      00316     MOVLF   WRGB, 0x00
+01AC   002?               M         BANKSEL WRGB
+01AD   3000               M         MOVLW   0x00
+01AE   00??               M         MOVWF   WRGB
+                      00317     
+                      00318     
+                      00319 ; RED PIECEWISE FUNCTION    
+                      00320 ;   | 0xFF              , f <= R1
+                      00321 ;   | 0xFF - RS2(f-GR), R1 < f <= R2
+                      00322 ;   | 0x00              , R2 < f <= R3
+                      00323 ;   | RS1(f-R1)         , f > R3
+                      00324 ;    
+01AF                  00325 SET_RED:
+01AF   1003           00326     BCF     STATUS, C
+01B0   002?           00327     BANKSEL WDATA
+                      00328     CMP16   WDATA, R1
+                          M         MOV16   WDATA, _REG_A
+01B1   002?               M         BANKSEL WDATA
+01B2   08??               M         MOVF    WDATA,W
+01B3   0020               M         BANKSEL _REG_A
+01B4   00FE               M         MOVWF   _REG_A
+01B5   002?               M         BANKSEL WDATA
+01B6   08??               M         MOVF    WDATA+1,W
+01B7   0020               M         BANKSEL _REG_A
+01B8   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,R1
+01B9   08??               M         MOVF    R1,W          ; Get low byte of subtrahend
+01BA   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+01BB   08??               M         MOVF    R1+1,W        ; Now get high byte of subtrahend
+01BC   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+01BD   0A??               M         INCF    R1+1,W        ; decrement high byte of dst we inc src
+01BE   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+01BF   087E               M         MOVF    _REG_A,W
+01C0   047F               M         IORWF   _REG_A+1,W
+01C1   1C03           00329     BTFSS   STATUS, C                   ; test if WDATA <= R1
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 20
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01C2   2???           00330     GOTO    R_1
+01C3   2???           00331     GOTO    R_12
+01C4                  00332 R_1:    ; WDATA <= R1
+01C4   002?           00333     BANKSEL WRGB
+                      00334     MOVLF   WRGB+1, 0xFF
+01C5   002?               M         BANKSEL WRGB+1
+01C6   30FF               M         MOVLW   0xFF
+01C7   00??               M         MOVWF   WRGB+1
+01C8   2???           00335     GOTO    SET_BLUE
+                      00336     
+01C9                  00337 R_12:   ; R1 < WDATA <= R2 
+01C9   1003           00338     BCF     STATUS, C
+01CA   002?           00339     BANKSEL WDATA
+                      00340     CMP16   WDATA, R2
+                          M         MOV16   WDATA, _REG_A
+01CB   002?               M         BANKSEL WDATA
+01CC   08??               M         MOVF    WDATA,W
+01CD   0020               M         BANKSEL _REG_A
+01CE   00FE               M         MOVWF   _REG_A
+01CF   002?               M         BANKSEL WDATA
+01D0   08??               M         MOVF    WDATA+1,W
+01D1   0020               M         BANKSEL _REG_A
+01D2   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,R2
+01D3   08??               M         MOVF    R2,W          ; Get low byte of subtrahend
+01D4   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+01D5   08??               M         MOVF    R2+1,W        ; Now get high byte of subtrahend
+01D6   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+01D7   0A??               M         INCF    R2+1,W        ; decrement high byte of dst we inc src
+01D8   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+01D9   087E               M         MOVF    _REG_A,W
+01DA   047F               M         IORWF   _REG_A+1,W
+01DB   1803           00341     BTFSC   STATUS, C   
+01DC   2???           00342      GOTO    R_23                       ; go to R_23 if WDATA not within range of R_12
+                      00343     
+                      00344     MOV16   WDATA, TEMP16               ; (f - R1)
+01DD   002?               M         BANKSEL WDATA
+01DE   08??               M         MOVF    WDATA,W
+01DF   002?               M         BANKSEL TEMP16
+01E0   00??               M         MOVWF   TEMP16
+01E1   002?               M         BANKSEL WDATA
+01E2   08??               M         MOVF    WDATA+1,W
+01E3   002?               M         BANKSEL TEMP16
+01E4   00??               M         MOVWF   TEMP16+1
+                      00345     SUB16   TEMP16, R1
+01E5   08??               M         MOVF    R1,W          ; Get low byte of subtrahend
+01E6   02??               M         SUBWF   TEMP16,F      ; Subtract DST(low) - SRC(low)
+01E7   08??               M         MOVF    R1+1,W        ; Now get high byte of subtrahend
+01E8   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+01E9   0A??               M         INCF    R1+1,W        ; decrement high byte of dst we inc src
+01EA   02??               M         SUBWF   TEMP16+1,F    ; Subtract the high byte and we're done
+                      00346     RSF16   TEMP16, RS1                 ; (f - R1) / (1/m >> RS)
+                          M         MOV16   TEMP16, SHIFTNUM
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 21
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01EB   002?               M         BANKSEL TEMP16
+01EC   08??               M         MOVF    TEMP16,W
+01ED   002?               M         BANKSEL SHIFTNUM
+01EE   00??               M         MOVWF   SHIFTNUM
+01EF   002?               M         BANKSEL TEMP16
+01F0   08??               M         MOVF    TEMP16+1,W
+01F1   002?               M         BANKSEL SHIFTNUM
+01F2   00??               M         MOVWF   SHIFTNUM+1
+01F3   002?               M         BANKSEL RS1
+01F4   08??               M         MOVFW   RS1
+01F5   3180               M         PAGESEL RSHIFT16
+01F6   2???               M         CALL    RSHIFT16
+                          M         MOV16   SHIFTNUM, TEMP16
+01F7   002?               M         BANKSEL SHIFTNUM
+01F8   08??               M         MOVF    SHIFTNUM,W
+01F9   002?               M         BANKSEL TEMP16
+01FA   00??               M         MOVWF   TEMP16
+01FB   002?               M         BANKSEL SHIFTNUM
+01FC   08??               M         MOVF    SHIFTNUM+1,W
+01FD   002?               M         BANKSEL TEMP16
+01FE   00??               M         MOVWF   TEMP16+1
+                      00347     MOVLF   TEMP8, 0xFF
+01FF   002?               M         BANKSEL TEMP8
+0200   30FF               M         MOVLW   0xFF
+0201   00??               M         MOVWF   TEMP8
+0202   08??           00348     MOVFW   TEMP16
+0203   02??           00349     SUBWF   TEMP8, F
+0204   002?           00350     BANKSEL WRGB
+                      00351     CPYFF   TEMP8, WRGB+1               ; WRGB in GRB format
+0205   002?               M         BANKSEL TEMP8
+0206   08??               M         MOVF    TEMP8, W
+0207   002?               M         BANKSEL WRGB+1
+0208   00??               M         MOVWF   WRGB+1
+0209   2???           00352     GOTO    SET_BLUE
+                      00353     
+020A                  00354 R_23:   ; R2 < WDATA <= R3 
+020A   1003           00355     BCF     STATUS, C
+020B   002?           00356     BANKSEL WDATA
+                      00357     CMP16   WDATA, R3
+                          M         MOV16   WDATA, _REG_A
+020C   002?               M         BANKSEL WDATA
+020D   08??               M         MOVF    WDATA,W
+020E   0020               M         BANKSEL _REG_A
+020F   00FE               M         MOVWF   _REG_A
+0210   002?               M         BANKSEL WDATA
+0211   08??               M         MOVF    WDATA+1,W
+0212   0020               M         BANKSEL _REG_A
+0213   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,R3
+0214   08??               M         MOVF    R3,W          ; Get low byte of subtrahend
+0215   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+0216   08??               M         MOVF    R3+1,W        ; Now get high byte of subtrahend
+0217   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 22
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0218   0A??               M         INCF    R3+1,W        ; decrement high byte of dst we inc src
+0219   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+021A   087E               M         MOVF    _REG_A,W
+021B   047F               M         IORWF   _REG_A+1,W
+021C   1803           00358     BTFSC   STATUS, C   
+021D   2???           00359      GOTO    R_3
+                      00360     
+021E   002?           00361     BANKSEL WRGB
+                      00362     MOVLF   WRGB+1, 0x00
+021F   002?               M         BANKSEL WRGB+1
+0220   3000               M         MOVLW   0x00
+0221   00??               M         MOVWF   WRGB+1
+0222   2???           00363     GOTO    SET_BLUE
+                      00364     
+0223                  00365 R_3:    ; WDATA > R3
+0223   1003           00366     BCF     STATUS, C
+0224   002?           00367     BANKSEL WDATA
+                      00368     MOV16   WDATA, TEMP16               ; (f - R1)
+0225   002?               M         BANKSEL WDATA
+0226   08??               M         MOVF    WDATA,W
+0227   002?               M         BANKSEL TEMP16
+0228   00??               M         MOVWF   TEMP16
+0229   002?               M         BANKSEL WDATA
+022A   08??               M         MOVF    WDATA+1,W
+022B   002?               M         BANKSEL TEMP16
+022C   00??               M         MOVWF   TEMP16+1
+                      00369     SUB16   TEMP16, R3
+022D   08??               M         MOVF    R3,W          ; Get low byte of subtrahend
+022E   02??               M         SUBWF   TEMP16,F      ; Subtract DST(low) - SRC(low)
+022F   08??               M         MOVF    R3+1,W        ; Now get high byte of subtrahend
+0230   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+0231   0A??               M         INCF    R3+1,W        ; decrement high byte of dst we inc src
+0232   02??               M         SUBWF   TEMP16+1,F    ; Subtract the high byte and we're done
+                      00370     RSF16   TEMP16, RS2                 ; (f - R1) / (1/m >> RS)
+                          M         MOV16   TEMP16, SHIFTNUM
+0233   002?               M         BANKSEL TEMP16
+0234   08??               M         MOVF    TEMP16,W
+0235   002?               M         BANKSEL SHIFTNUM
+0236   00??               M         MOVWF   SHIFTNUM
+0237   002?               M         BANKSEL TEMP16
+0238   08??               M         MOVF    TEMP16+1,W
+0239   002?               M         BANKSEL SHIFTNUM
+023A   00??               M         MOVWF   SHIFTNUM+1
+023B   002?               M         BANKSEL RS2
+023C   08??               M         MOVFW   RS2
+023D   3180               M         PAGESEL RSHIFT16
+023E   2???               M         CALL    RSHIFT16
+                          M         MOV16   SHIFTNUM, TEMP16
+023F   002?               M         BANKSEL SHIFTNUM
+0240   08??               M         MOVF    SHIFTNUM,W
+0241   002?               M         BANKSEL TEMP16
+0242   00??               M         MOVWF   TEMP16
+0243   002?               M         BANKSEL SHIFTNUM
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 23
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0244   08??               M         MOVF    SHIFTNUM+1,W
+0245   002?               M         BANKSEL TEMP16
+0246   00??               M         MOVWF   TEMP16+1
+0247   002?           00371     BANKSEL WRGB
+                      00372     CPYFF   TEMP16, WRGB+1              ; WRGB in GRB format
+0248   002?               M         BANKSEL TEMP16
+0249   08??               M         MOVF    TEMP16, W
+024A   002?               M         BANKSEL WRGB+1
+024B   00??               M         MOVWF   WRGB+1
+                      00373     
+024C                  00374 SET_BLUE:    
+024C   1003           00375     BCF     STATUS, C
+024D   002?           00376     BANKSEL WDATA
+                      00377     CMP16   WDATA, B1                   ; check for first range in piecewise
+                          M         MOV16   WDATA, _REG_A
+024E   002?               M         BANKSEL WDATA
+024F   08??               M         MOVF    WDATA,W
+0250   0020               M         BANKSEL _REG_A
+0251   00FE               M         MOVWF   _REG_A
+0252   002?               M         BANKSEL WDATA
+0253   08??               M         MOVF    WDATA+1,W
+0254   0020               M         BANKSEL _REG_A
+0255   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,B1
+0256   08??               M         MOVF    B1,W          ; Get low byte of subtrahend
+0257   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+0258   08??               M         MOVF    B1+1,W        ; Now get high byte of subtrahend
+0259   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+025A   0A??               M         INCF    B1+1,W        ; decrement high byte of dst we inc src
+025B   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+025C   087E               M         MOVF    _REG_A,W
+025D   047F               M         IORWF   _REG_A+1,W
+025E   1C03           00378     BTFSS   STATUS, C                   
+025F   2???           00379     GOTO    B_1                         ; within first range
+0260   2???           00380     GOTO    B_12                        ; MIGHT be in the next range
+0261                  00381 B_1:    ; first range in piecewise
+0261   002?           00382     BANKSEL WRGB
+                      00383     MOVLF   WRGB, 0x00
+0262   002?               M         BANKSEL WRGB
+0263   3000               M         MOVLW   0x00
+0264   00??               M         MOVWF   WRGB
+0265   0008           00384     RETURN
+                      00385     
+0266                  00386 B_12:   ; second range in piecewise
+0266   1003           00387     BCF     STATUS, C
+0267   002?           00388     BANKSEL WDATA
+                      00389     CMP16   WDATA, B2
+                          M         MOV16   WDATA, _REG_A
+0268   002?               M         BANKSEL WDATA
+0269   08??               M         MOVF    WDATA,W
+026A   0020               M         BANKSEL _REG_A
+026B   00FE               M         MOVWF   _REG_A
+026C   002?               M         BANKSEL WDATA
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 24
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+026D   08??               M         MOVF    WDATA+1,W
+026E   0020               M         BANKSEL _REG_A
+026F   00FF               M         MOVWF   _REG_A+1
+                          M         SUB16   _REG_A,B2
+0270   08??               M         MOVF    B2,W          ; Get low byte of subtrahend
+0271   02FE               M         SUBWF   _REG_A,F      ; Subtract DST(low) - SRC(low)
+0272   08??               M         MOVF    B2+1,W        ; Now get high byte of subtrahend
+0273   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+0274   0A??               M         INCF    B2+1,W        ; decrement high byte of dst we inc src
+0275   02FF               M         SUBWF   _REG_A+1,F    ; Subtract the high byte and we're done
+0276   087E               M         MOVF    _REG_A,W
+0277   047F               M         IORWF   _REG_A+1,W
+0278   1803           00390     BTFSC   STATUS, C   
+0279   2???           00391      GOTO    B_23                       ; might be in the next range 
+                      00392     
+                      00393     MOV16   WDATA, TEMP16               ; in this range
+027A   002?               M         BANKSEL WDATA
+027B   08??               M         MOVF    WDATA,W
+027C   002?               M         BANKSEL TEMP16
+027D   00??               M         MOVWF   TEMP16
+027E   002?               M         BANKSEL WDATA
+027F   08??               M         MOVF    WDATA+1,W
+0280   002?               M         BANKSEL TEMP16
+0281   00??               M         MOVWF   TEMP16+1
+                      00394     SUB16   TEMP16, B1                  ; (f - G1)
+0282   08??               M         MOVF    B1,W          ; Get low byte of subtrahend
+0283   02??               M         SUBWF   TEMP16,F      ; Subtract DST(low) - SRC(low)
+0284   08??               M         MOVF    B1+1,W        ; Now get high byte of subtrahend
+0285   1C03               M         BTFSS   STATUS,C        ; If there was a borrow, rather than
+0286   0A??               M         INCF    B1+1,W        ; decrement high byte of dst we inc src
+0287   02??               M         SUBWF   TEMP16+1,F    ; Subtract the high byte and we're done
+                      00395     RSF16   TEMP16, BS1                 ; (f - G1) / (1/m >> GS)
+                          M         MOV16   TEMP16, SHIFTNUM
+0288   002?               M         BANKSEL TEMP16
+0289   08??               M         MOVF    TEMP16,W
+028A   002?               M         BANKSEL SHIFTNUM
+028B   00??               M         MOVWF   SHIFTNUM
+028C   002?               M         BANKSEL TEMP16
+028D   08??               M         MOVF    TEMP16+1,W
+028E   002?               M         BANKSEL SHIFTNUM
+028F   00??               M         MOVWF   SHIFTNUM+1
+0290   002?               M         BANKSEL BS1
+0291   08??               M         MOVFW   BS1
+0292   3180               M         PAGESEL RSHIFT16
+0293   2???               M         CALL    RSHIFT16
+                          M         MOV16   SHIFTNUM, TEMP16
+0294   002?               M         BANKSEL SHIFTNUM
+0295   08??               M         MOVF    SHIFTNUM,W
+0296   002?               M         BANKSEL TEMP16
+0297   00??               M         MOVWF   TEMP16
+0298   002?               M         BANKSEL SHIFTNUM
+0299   08??               M         MOVF    SHIFTNUM+1,W
+029A   002?               M         BANKSEL TEMP16
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 25
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+029B   00??               M         MOVWF   TEMP16+1
+029C   002?           00396     BANKSEL WRGB
+                      00397     CPYFF   TEMP16, WRGB                ; WRGB in GRB format
+029D   002?               M         BANKSEL TEMP16
+029E   08??               M         MOVF    TEMP16, W
+029F   002?               M         BANKSEL WRGB
+02A0   00??               M         MOVWF   WRGB
+02A1   0008           00398     RETURN
+                      00399     
+02A2                  00400 B_23:   ; third range in piecewise
+02A2   1003           00401     BCF     STATUS, C
+02A3   002?           00402     BANKSEL WRGB                         
+                      00403     MOVLF   WRGB, 0xFF
+02A4   002?               M         BANKSEL WRGB
+02A5   30FF               M         MOVLW   0xFF
+02A6   00??               M         MOVWF   WRGB
+02A7   0008           00404     RETURN
+                      00405 
+                      00406     
+                      00407     END
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 26
 
 
 SYMBOL TABLE
@@ -690,7 +1489,7 @@ ACKDT                             00000005
 ACKEN                             00000004
 ACKSTAT                           00000006
 ACKTIM                            00000007
-ACQ                               0000181E
+ACQ                               00000032
 ACQ_DELAY                         
 ADCON0                            0000009D
 ADCON1                            0000009E
@@ -700,7 +1499,7 @@ ADCS1                             00000005
 ADCS2                             00000006
 ADC_ANSEL                         ANSA4
 ADC_CH                            AN3
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 13
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 27
 
 
 SYMBOL TABLE
@@ -731,7 +1530,7 @@ ADRES                             0000009B
 ADRESH                            0000009C
 ADRESL                            0000009B
 AHEN                              00000001
-AMPL                              00000022
+AMPL_WAV                          00000025
 ANSA0                             00000000
 ANSA1                             00000001
 ANSA2                             00000002
@@ -759,7 +1558,7 @@ AT1CC15                           00000005
 AT1CC16                           00000006
 AT1CC17                           00000007
 AT1CC18                           00000000
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 14
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 28
 
 
 SYMBOL TABLE
@@ -818,7 +1617,7 @@ AT1CON1                           00000815
 AT1CP1S0                          00000000
 AT1CP1S1                          00000001
 AT1CP1S2                          00000002
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 15
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 29
 
 
 SYMBOL TABLE
@@ -877,7 +1676,7 @@ AT1MISS5                          00000005
 AT1MISS6                          00000006
 AT1MISS7                          00000007
 AT1MISS8                          00000000
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 16
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 30
 
 
 SYMBOL TABLE
@@ -936,7 +1735,7 @@ AT1RES                            0000080C
 AT1RES0                           00000000
 AT1RES1                           00000001
 AT1RES2                           00000002
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 17
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 31
 
 
 SYMBOL TABLE
@@ -995,7 +1794,7 @@ ATCC3PPS4                         00000004
 ATINPPS                           00000E16
 ATINPPS0                          00000000
 ATINPPS1                          00000001
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 18
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 32
 
 
 SYMBOL TABLE
@@ -1004,12 +1803,13 @@ SYMBOL TABLE
 ATINPPS2                          00000002
 ATINPPS3                          00000003
 ATINPPS4                          00000004
+B1                                00000044
+B2                                00000046
 BAUD1CON                          0000019F
 BAUDCON                           0000019F
 BAUDCON1                          0000019F
 BAUDCTL                           0000019F
 BAUDCTL1                          0000019F
-BCCZ                              
 BCL1IE                            00000003
 BCL1IF                            00000003
 BF                                00000000
@@ -1019,6 +1819,7 @@ BORFS                             00000006
 BORRDY                            00000000
 BRG16                             00000003
 BRGH                              00000002
+BS1                               00000043
 BSR                               00000008
 BSR0                              00000000
 BSR1                              00000001
@@ -1037,6 +1838,9 @@ BUF7                              00000007
 BUSY_CRCCON0                      00000005
 BUSY_PID1CON                      00000006
 BUSY_SCANCON0                     00000005
+B_1                               00000261
+B_12                              00000266
+B_23                              000002A2
 C                                 00000000
 C1AS                              00000001
 C1HYS                             00000001
@@ -1049,17 +1853,17 @@ C1NCH1                            00000001
 C1NCH2                            00000002
 C1ON                              00000007
 C1OUT                             00000006
-C1PCH0                            00000004
-C1PCH1                            00000005
-C1POL                             00000004
-C1SP                              00000002
-C1SYNC                            00000000
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 19
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 33
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+C1PCH0                            00000004
+C1PCH1                            00000005
+C1POL                             00000004
+C1SP                              00000002
+C1SYNC                            00000000
 C2AS                              00000002
 C2HYS                             00000001
 C2IE                              00000006
@@ -1108,17 +1912,17 @@ CC31                              00000001
 CC32                              00000002
 CC33                              00000003
 CC34                              00000004
-CC35                              00000005
-CC36                              00000006
-CC37                              00000007
-CC38                              00000000
-CC39                              00000001
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 20
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 34
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+CC35                              00000005
+CC36                              00000006
+CC37                              00000007
+CC38                              00000000
+CC39                              00000001
 CC3EN                             00000007
 CC3MODE                           00000000
 CC3POL                            00000004
@@ -1167,17 +1971,17 @@ CCP2PPS4                          00000004
 CCP2TSEL0                         00000002
 CCP2TSEL1                         00000003
 CCPR1                             00000291
-CCPR1H                            00000292
-CCPR1L                            00000291
-CCPR2                             00000298
-CCPR2H                            00000299
-CCPR2L                            00000298
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 21
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 35
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+CCPR1H                            00000292
+CCPR1L                            00000291
+CCPR2                             00000298
+CCPR2H                            00000299
+CCPR2L                            00000298
 CCPTMRS                           0000029E
 CCW5                              00000005
 CDAFVR0                           00000002
@@ -1226,17 +2030,17 @@ CLC2SEL1                          00000F1D
 CLC2SEL2                          00000F1E
 CLC2SEL3                          00000F1F
 CLC3CON                           00000F24
-CLC3GLS0                          00000F2A
-CLC3GLS1                          00000F2B
-CLC3GLS2                          00000F2C
-CLC3GLS3                          00000F2D
-CLC3IE                            00000002
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 22
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 36
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+CLC3GLS0                          00000F2A
+CLC3GLS1                          00000F2B
+CLC3GLS2                          00000F2C
+CLC3GLS3                          00000F2D
+CLC3IE                            00000002
 CLC3IF                            00000002
 CLC3POL                           00000F25
 CLC3SEL0                          00000F26
@@ -1281,21 +2085,22 @@ CLCIN3PPS2                        00000002
 CLCIN3PPS3                        00000003
 CLCIN3PPS4                        00000004
 CLR16                             
+CLRSTAT                           
 CM1CON0                           00000111
 CM1CON1                           00000112
 CM2CON0                           00000113
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 37
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 CM2CON1                           00000114
 CMOUT                             00000115
 CMP16                             
 CP1S0                             00000000
 CP1S1                             00000001
 CP1S2                             00000002
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 23
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 CP2S0                             00000000
 CP2S1                             00000001
 CP2S2                             00000002
@@ -1343,18 +2148,18 @@ CRCDAT3                           00000003
 CRCDAT4                           00000004
 CRCDAT5                           00000005
 CRCDAT6                           00000006
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 38
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 CRCDAT8                           00000000
 CRCDAT9                           00000001
 CRCDATH                           00000792
 CRCDATL                           00000791
 CRCDLEN0                          00000004
 CRCDLEN1                          00000005
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 24
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 CRCDLEN2                          00000006
 CRCDLEN3                          00000007
 CRCEN                             00000007
@@ -1402,18 +2207,18 @@ CRCXOR6                           00000006
 CRCXOR7                           00000007
 CRCXOR8                           00000000
 CRCXOR9                           00000001
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 39
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 CRCXORH                           00000798
 CRCXORL                           00000797
 CRDCDAT7                          00000007
 CREN                              00000004
 CS                                00000000
 CS0                               00000000
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 25
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 CS1                               00000001
 CS2                               00000002
 CS3                               00000003
@@ -1461,18 +2266,18 @@ CWG1LSBD0                         00000004
 CWG1LSBD1                         00000005
 CWG1MODE0                         00000000
 CWG1MODE1                         00000001
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 40
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 CWG1MODE2                         00000002
 CWG1OCON0                         00000695
 CWG1OVRA                          00000004
 CWG1OVRB                          00000005
 CWG1OVRC                          00000006
 CWG1OVRD                          00000007
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 26
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 CWG1POLA                          00000000
 CWG1POLB                          00000001
 CWG1POLC                          00000002
@@ -1520,18 +2325,18 @@ D3S2                              00000002
 D3S3                              00000003
 D3S4                              00000004
 D3S5                              00000005
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 41
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 D3T                               00000005
 D4N                               00000006
 D4S0                              00000000
 D4S1                              00000001
 D4S2                              00000002
 D4S3                              00000003
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 27
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 D4S4                              00000004
 D4S5                              00000005
 D4T                               00000007
@@ -1579,33 +2384,33 @@ DC                                00000001
 DC0                               00000006
 DC1                               00000007
 DC2                               00000000
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 42
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 DC3                               00000001
 DC4                               00000002
 DC5                               00000003
 DC6                               00000004
 DC7                               00000005
 DC8                               00000006
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 28
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 DC9                               00000007
 DC_SHAD                           00000001
 DEC16                             
-DELTA_T                           00000028
+DELTA_T                           0000002B
 DHEN                              00000000
 DLEN0                             00000004
 DLEN1                             00000005
 DLEN2                             00000006
 DLEN3                             00000007
-DO_RENDER                         000018A2
+DO_RENDER                         000000FA
 D_NOT_A                           00000005
 EN                                00000007
-END_TEST1                         0000183F
-END_TEST2                         00001855
-END_TRGR_TEST                     0000189F
+END_TEST1                         00000073
+END_TEST2                         00000092
+END_TRGR_TEST                     000000F7
 ERR0                              00000000
 ERR1                              00000001
 ERR10                             00000002
@@ -1638,18 +2443,18 @@ ERRL4                             00000004
 ERRL5                             00000005
 ERRL6                             00000006
 ERRL7                             00000007
-EXTERN_INITIAL                    00001800
-EXTERN_INTERRUPT_SERV             00001822
-F                                 00000001
-FBCC                              7
-FERR                              00000002
-FIRST_TRGR                        0000185B
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 29
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 43
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+EXTERN_INITIAL                    00000000
+EXTERN_INTERRUPT_SERV             0000004F
+F                                 00000001
+FBCC                              7
+FERR                              00000002
+FIRST_TRGR                        00000099
 FMT                               00000004
 FPSTM                             6
 FRC                               5
@@ -1668,10 +2473,14 @@ FULL                              00000000
 FVRCON                            00000117
 FVREN                             00000007
 FVRRDY                            00000006
+G1                                0000003B
 G1EN                              00000007
 G1POL                             00000000
+G2                                0000003D
 G2POL                             00000001
+G3                                0000003F
 G3POL                             00000002
+G4                                00000041
 G4D1N                             00000000
 G4D1T                             00000001
 G4D2N                             00000002
@@ -1685,7 +2494,20 @@ GCEN                              00000007
 GIE                               00000007
 GO                                00000001
 GO_NOT_DONE                       00000001
+GS1                               00000039
+GS2                               0000003A
+G_1                               00000110
+G_12                              00000115
+G_23                              00000151
+G_34                              0000016A
+G_4                               000001AB
 HADR0                             00000000
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 44
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 HADR1                             00000001
 HADR10                            00000002
 HADR11                            00000003
@@ -1703,12 +2525,6 @@ HADR9                             00000001
 HARD2                             00000002
 HFIOFL                            00000003
 HFIOFR                            00000004
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 30
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 HFIOFS                            00000000
 HIDC4                             00000004
 HIDC5                             00000005
@@ -1745,6 +2561,12 @@ INLVLA5                           00000005
 INLVLC                            0000038E
 INLVLC0                           00000000
 INLVLC1                           00000001
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 45
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 INLVLC2                           00000002
 INLVLC3                           00000003
 INLVLC4                           00000004
@@ -1762,12 +2584,6 @@ INTPPS1                           00000001
 INTPPS2                           00000002
 INTPPS3                           00000003
 INTPPS4                           00000004
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 31
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 INVALID                           00000004
 IOCAF                             00000393
 IOCAF0                            00000000
@@ -1804,6 +2620,12 @@ IOCCN0                            00000000
 IOCCN1                            00000001
 IOCCN2                            00000002
 IOCCN3                            00000003
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 46
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 IOCCN4                            00000004
 IOCCN5                            00000005
 IOCCN6                            00000006
@@ -1821,12 +2643,6 @@ IOCIE                             00000003
 IOCIF                             00000000
 IRCF0                             00000003
 IRCF1                             00000004
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 32
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 IRCF2                             00000005
 IRCF3                             00000006
 IS0                               00000000
@@ -1863,6 +2679,12 @@ K24                               00000004
 K25                               00000005
 K26                               00000006
 K27                               00000007
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 47
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 K28                               00000000
 K29                               00000001
 K30                               00000000
@@ -1880,12 +2702,6 @@ K35                               00000005
 K36                               00000006
 K37                               00000007
 K38                               00000000
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 33
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 K39                               00000001
 LADR10                            00000002
 LADR11                            00000003
@@ -1922,6 +2738,12 @@ LC1D1S3                           00000003
 LC1D1S4                           00000004
 LC1D1S5                           00000005
 LC1D2S0                           00000000
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 48
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 LC1D2S1                           00000001
 LC1D2S2                           00000002
 LC1D2S3                           00000003
@@ -1939,12 +2761,6 @@ LC1D4S2                           00000002
 LC1D4S3                           00000003
 LC1D4S4                           00000004
 LC1D4S5                           00000005
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 34
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 LC1EN                             00000007
 LC1G1D1N                          00000000
 LC1G1D1T                          00000001
@@ -1981,6 +2797,12 @@ LC1G4D3N                          00000004
 LC1G4D3T                          00000005
 LC1G4D4N                          00000006
 LC1G4D4T                          00000007
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 49
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 LC1G4POL                          00000003
 LC1INTN                           00000003
 LC1INTP                           00000004
@@ -1998,12 +2820,6 @@ LC2D1S5                           00000005
 LC2D2S0                           00000000
 LC2D2S1                           00000001
 LC2D2S2                           00000002
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 35
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 LC2D2S3                           00000003
 LC2D2S4                           00000004
 LC2D2S5                           00000005
@@ -2040,6 +2856,12 @@ LC2G2D4T                          00000007
 LC2G2POL                          00000001
 LC2G3D1N                          00000000
 LC2G3D1T                          00000001
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 50
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 LC2G3D2N                          00000002
 LC2G3D2T                          00000003
 LC2G3D3N                          00000004
@@ -2057,12 +2879,6 @@ LC2G4D4N                          00000006
 LC2G4D4T                          00000007
 LC2G4POL                          00000003
 LC2INTN                           00000003
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 36
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 LC2INTP                           00000004
 LC2MODE0                          00000000
 LC2MODE1                          00000001
@@ -2099,6 +2915,12 @@ LC3G1D1T                          00000001
 LC3G1D2N                          00000002
 LC3G1D2T                          00000003
 LC3G1D3N                          00000004
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 51
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 LC3G1D3T                          00000005
 LC3G1D4N                          00000006
 LC3G1D4T                          00000007
@@ -2116,12 +2938,6 @@ LC3G3D1N                          00000000
 LC3G3D1T                          00000001
 LC3G3D2N                          00000002
 LC3G3D2T                          00000003
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 37
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 LC3G3D3N                          00000004
 LC3G3D3T                          00000005
 LC3G3D4N                          00000006
@@ -2158,6 +2974,12 @@ LC4D2S5                           00000005
 LC4D3S0                           00000000
 LC4D3S1                           00000001
 LC4D3S2                           00000002
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 52
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 LC4D3S3                           00000003
 LC4D3S4                           00000004
 LC4D3S5                           00000005
@@ -2175,12 +2997,6 @@ LC4G1D2T                          00000003
 LC4G1D3N                          00000004
 LC4G1D3T                          00000005
 LC4G1D4N                          00000006
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 38
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 LC4G1D4T                          00000007
 LC4G1POL                          00000000
 LC4G2D1N                          00000000
@@ -2217,6 +3033,12 @@ LC4MODE1                          00000001
 LC4MODE2                          00000002
 LC4OUT                            00000005
 LC4POL                            00000007
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 53
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 LD                                00000006
 LDAR0                             00000000
 LDAR1                             00000001
@@ -2225,21 +3047,17 @@ LSAC0                             00000002
 LSAC1                             00000003
 LSBD0                             00000004
 LSBD1                             00000005
+LSF16                             
+LSHIFT16                          00000000
 LSL16                             
 LSR16                             
 LWLO                              00000005
-MAX_WAV                           00000026
+MAX_WAV                           00000029
 MC1OUT                            00000000
 MC2OUT                            00000001
 MFIOFR                            00000002
-MIN_WAV                           00000024
+MIN_WAV                           00000027
 MISS0                             00000000
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 39
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 MISS1                             00000001
 MISS10                            00000002
 MISS11                            00000003
@@ -2267,7 +3085,6 @@ MODE3                             00000003
 MODE4                             00000004
 MOV16                             
 MOVLF                             
-MOV_WDATA_MIN                     000018A3
 MPP                               00000002
 MSK0                              00000000
 MSK1                              00000001
@@ -2275,6 +3092,12 @@ MSK2                              00000002
 MSK3                              00000003
 MSK4                              00000004
 MSK5                              00000005
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 54
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 MSK6                              00000006
 MSK7                              00000007
 NEG16                             
@@ -2293,12 +3116,6 @@ ODA0                              00000000
 ODA1                              00000001
 ODA2                              00000002
 ODA4                              00000004
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 40
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 ODA5                              00000005
 ODC0                              00000000
 ODC1                              00000001
@@ -2334,6 +3151,12 @@ OUT2                              00000002
 OUT20                             00000004
 OUT21                             00000005
 OUT22                             00000006
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 55
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 OUT23                             00000007
 OUT24                             00000000
 OUT25                             00000001
@@ -2352,12 +3175,6 @@ OUT4                              00000004
 OUT5                              00000005
 OUT6                              00000006
 OUT7                              00000007
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 41
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 OUT8                              00000000
 OUT9                              00000001
 OUTPS0                            00000000
@@ -2393,6 +3210,12 @@ PER3                              00000003
 PER4                              00000004
 PER5                              00000005
 PER6                              00000006
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 56
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 PER7                              00000007
 PER8                              00000000
 PER9                              00000001
@@ -2411,12 +3234,6 @@ PERL3                             00000003
 PERL4                             00000004
 PERL5                             00000005
 PERL6                             00000006
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 42
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 PERL7                             00000007
 PHP                               00000006
 PHS0                              00000000
@@ -2452,6 +3269,12 @@ PID1ACC23                         00000007
 PID1ACC24                         00000000
 PID1ACC25                         00000001
 PID1ACC26                         00000002
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 57
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 PID1ACC27                         00000003
 PID1ACC28                         00000004
 PID1ACC29                         00000005
@@ -2470,12 +3293,6 @@ PID1ACC9                          00000001
 PID1ACCHH                         00000612
 PID1ACCHL                         00000611
 PID1ACCLH                         00000610
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 43
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 PID1ACCLL                         0000060F
 PID1ACCU                          00000613
 PID1BUSY                          00000006
@@ -2511,6 +3328,12 @@ PID1K110                          00000002
 PID1K111                          00000003
 PID1K112                          00000004
 PID1K113                          00000005
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 58
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 PID1K114                          00000006
 PID1K115                          00000007
 PID1K12                           00000002
@@ -2529,12 +3352,6 @@ PID1K21                           00000001
 PID1K210                          00000002
 PID1K211                          00000003
 PID1K212                          00000004
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 44
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 PID1K213                          00000005
 PID1K214                          00000006
 PID1K215                          00000007
@@ -2570,6 +3387,12 @@ PID1K3L                           00000594
 PID1MODE0                         00000000
 PID1MODE1                         00000001
 PID1MODE2                         00000002
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 59
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 PID1OUT                           00000596
 PID1OUT0                          00000000
 PID1OUT1                          00000001
@@ -2588,12 +3411,6 @@ PID1OUT20                         00000004
 PID1OUT21                         00000005
 PID1OUT22                         00000006
 PID1OUT23                         00000007
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 45
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 PID1OUT24                         00000000
 PID1OUT25                         00000001
 PID1OUT26                         00000002
@@ -2629,6 +3446,12 @@ PID1SET14                         00000006
 PID1SET15                         00000007
 PID1SET2                          00000002
 PID1SET3                          00000003
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 60
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 PID1SET4                          00000004
 PID1SET5                          00000005
 PID1SET6                          00000006
@@ -2647,12 +3470,6 @@ PID1Z113                          00000005
 PID1Z114                          00000006
 PID1Z115                          00000007
 PID1Z116                          00000000
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 46
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 PID1Z12                           00000002
 PID1Z13                           00000003
 PID1Z14                           00000004
@@ -2688,6 +3505,12 @@ PID1Z2U                           0000060E
 PIE1                              00000090
 PIE2                              00000091
 PIE3                              00000092
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 61
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 PIE4                              00000093
 PIE5                              00000094
 PIR1                              00000010
@@ -2706,12 +3529,6 @@ PMADRL                            00000191
 PMCON1                            00000195
 PMCON2                            00000196
 PMDAT                             00000193
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 47
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 PMDATH                            00000194
 PMDATL                            00000193
 POLA                              00000000
@@ -2747,6 +3564,12 @@ PSCNT11                           00000003
 PSCNT12                           00000004
 PSCNT13                           00000005
 PSCNT14                           00000006
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 62
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 PSCNT15                           00000007
 PSCNT16                           00000000
 PSCNT17                           00000001
@@ -2765,12 +3588,6 @@ PWM3DC1                           00000007
 PWM3DC2                           00000000
 PWM3DC3                           00000001
 PWM3DC4                           00000002
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 48
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 PWM3DC5                           00000003
 PWM3DC6                           00000004
 PWM3DC7                           00000005
@@ -2806,7 +3623,16 @@ PWMPW5                            00000003
 PWMPW6                            00000004
 PWMPW7                            00000005
 PWMPW8                            00000006
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 63
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 PWMPW9                            00000007
+R1                                00000033
+R2                                00000035
+R3                                00000037
 RA0                               00000000
 RA0PPS                            00000E90
 RA0PPS0                           00000000
@@ -2824,12 +3650,6 @@ RA1PPS4                           00000004
 RA2                               00000002
 RA2PPS                            00000E92
 RA2PPS0                           00000000
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 49
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 RA2PPS1                           00000001
 RA2PPS2                           00000002
 RA2PPS3                           00000003
@@ -2862,6 +3682,12 @@ RC1PPS0                           00000000
 RC1PPS1                           00000001
 RC1PPS2                           00000002
 RC1PPS3                           00000003
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 64
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 RC1PPS4                           00000004
 RC1REG                            00000199
 RC1STA                            0000019D
@@ -2883,12 +3709,6 @@ RC4                               00000004
 RC4PPS                            00000EA4
 RC4PPS0                           00000000
 RC4PPS1                           00000001
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 50
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 RC4PPS2                           00000002
 RC4PPS3                           00000003
 RC4PPS4                           00000004
@@ -2920,11 +3740,21 @@ RES6                              00000006
 RES7                              00000007
 RES8                              00000000
 RES9                              00000001
+RS1                               00000031
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 65
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RS2                               00000032
 RSEL0                             00000000
 RSEL1                             00000001
 RSEL2                             00000002
 RSEL3                             00000003
 RSEN                              00000001
+RSF16                             
+RSHIFT16                          00000000
 RST                               00000005
 RX9                               00000006
 RX9D                              00000000
@@ -2934,6 +3764,10 @@ RXPPS1                            00000001
 RXPPS2                            00000002
 RXPPS3                            00000003
 RXPPS4                            00000004
+R_1                               000001C4
+R_12                              000001C9
+R_23                              0000020A
+R_3                               00000223
 R_NOT_W                           00000002
 S                                 00000003
 SBCDE                             00000002
@@ -2942,12 +3776,6 @@ SCANBUSY                          00000005
 SCANCON0                          0000071C
 SCANEN                            00000007
 SCANGO                            00000006
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 51
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SCANHADR                          0000071A
 SCANHADR0                         00000000
 SCANHADR1                         00000001
@@ -2972,6 +3800,12 @@ SCANIF                            00000007
 SCANINTM                          00000003
 SCANINVALID                       00000004
 SCANLADR                          00000718
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 66
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SCANLADR0                         00000000
 SCANLADR1                         00000001
 SCANLADR10                        00000002
@@ -3001,14 +3835,8 @@ SCIE                              00000005
 SCKP                              00000004
 SCS0                              00000000
 SCS1                              00000001
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 52
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SDAHT                             00000003
-SECOND_TRGR                       0000187A
+SECOND_TRGR                       000000C3
 SEN                               00000000
 SENDB                             00000003
 SET0                              00000000
@@ -3027,8 +3855,18 @@ SET6                              00000006
 SET7                              00000007
 SET8                              00000000
 SET9                              00000001
-SET_PEAK                          00001851
-SET_TROUGH                        0000183B
+SET_BLUE                          0000024C
+SET_GREEN                         000000FB
+SET_PEAK                          0000008A
+SET_RED                           000001AF
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 67
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+SET_TROUGH                        0000006B
+SET_WRGB                          000000FB
 SHIFT0                            00000000
 SHIFT1                            00000001
 SHIFT10                           00000002
@@ -3046,6 +3884,7 @@ SHIFT7                            00000007
 SHIFT8                            00000000
 SHIFT9                            00000001
 SHIFTM                            00000001
+SHIFTNUM                          00000000
 SHUTDOWN                          00000007
 SLRA0                             00000000
 SLRA1                             00000001
@@ -3060,12 +3899,6 @@ SLRC4                             00000004
 SLRC5                             00000005
 SLRCONA                           0000030C
 SLRCONC                           0000030E
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 53
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SMP                               00000007
 SMT1AS                            00000000
 SMT1CLK                           00000D9B
@@ -3085,6 +3918,12 @@ SMT1CPR17                         00000001
 SMT1CPR18                         00000002
 SMT1CPR19                         00000003
 SMT1CPR2                          00000002
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 68
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SMT1CPR20                         00000004
 SMT1CPR21                         00000005
 SMT1CPR22                         00000006
@@ -3119,12 +3958,6 @@ SMT1CPW21                         00000005
 SMT1CPW22                         00000006
 SMT1CPW23                         00000007
 SMT1CPW3                          00000003
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 54
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SMT1CPW4                          00000004
 SMT1CPW5                          00000005
 SMT1CPW6                          00000006
@@ -3144,6 +3977,12 @@ SMT1IF                            00000000
 SMT1MODE0                         00000000
 SMT1MODE1                         00000001
 SMT1MODE2                         00000002
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 69
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SMT1MODE3                         00000003
 SMT1PR                            00000D95
 SMT1PR0                           00000000
@@ -3178,12 +4017,6 @@ SMT1PRU                           00000D97
 SMT1PS0                           00000000
 SMT1PS1                           00000001
 SMT1PWAIE                         00000002
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 55
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SMT1PWAIF                         00000002
 SMT1REPEAT                        00000006
 SMT1RESET                         00000005
@@ -3203,6 +4036,12 @@ SMT1STAT                          00000D9A
 SMT1TMR                           00000D8C
 SMT1TMR0                          00000000
 SMT1TMR1                          00000001
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 70
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SMT1TMR10                         00000002
 SMT1TMR11                         00000003
 SMT1TMR12                         00000004
@@ -3237,12 +4076,6 @@ SMT1WSEL1                         00000001
 SMT1WSEL2                         00000002
 SMT1WSEL3                         00000003
 SMT1WSEL4                         00000004
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 56
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SMT2AS                            00000000
 SMT2CLK                           00000DAD
 SMT2CON0                          00000DAA
@@ -3262,6 +4095,12 @@ SMT2CPR18                         00000002
 SMT2CPR19                         00000003
 SMT2CPR2                          00000002
 SMT2CPR20                         00000004
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 71
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SMT2CPR21                         00000005
 SMT2CPR22                         00000006
 SMT2CPR23                         00000007
@@ -3296,12 +4135,6 @@ SMT2CPW22                         00000006
 SMT2CPW23                         00000007
 SMT2CPW3                          00000003
 SMT2CPW4                          00000004
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 57
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SMT2CPW5                          00000005
 SMT2CPW6                          00000006
 SMT2CPW7                          00000007
@@ -3321,6 +4154,12 @@ SMT2MODE0                         00000000
 SMT2MODE1                         00000001
 SMT2MODE2                         00000002
 SMT2MODE3                         00000003
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 72
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SMT2PR                            00000DA7
 SMT2PR0                           00000000
 SMT2PR1                           00000001
@@ -3355,12 +4194,6 @@ SMT2PS0                           00000000
 SMT2PS1                           00000001
 SMT2PWAIE                         00000005
 SMT2PWAIF                         00000005
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 58
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SMT2REPEAT                        00000006
 SMT2RESET                         00000005
 SMT2SIG                           00000DAE
@@ -3380,6 +4213,12 @@ SMT2TMR                           00000D9E
 SMT2TMR0                          00000000
 SMT2TMR1                          00000001
 SMT2TMR10                         00000002
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 73
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SMT2TMR11                         00000003
 SMT2TMR12                         00000004
 SMT2TMR13                         00000005
@@ -3414,12 +4253,6 @@ SMT2WINPPS3                       00000003
 SMT2WINPPS4                       00000004
 SMT2WS                            00000001
 SMT2WSEL0                         00000000
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 59
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SMT2WSEL1                         00000001
 SMT2WSEL2                         00000002
 SMT2WSEL3                         00000003
@@ -3439,6 +4272,12 @@ SPBRGH1                           0000019C
 SPBRGL                            0000019B
 SPEN                              00000007
 SPLLEN                            00000007
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 74
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SPOL                              00000003
 SREN                              00000005
 SSEL0                             00000000
@@ -3473,12 +4312,6 @@ SSP1IF                            00000003
 SSP1MSK                           00000213
 SSP1MSK0                          00000000
 SSP1MSK1                          00000001
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 60
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SSP1MSK2                          00000002
 SSP1MSK3                          00000003
 SSP1MSK4                          00000004
@@ -3498,6 +4331,12 @@ SSPCON                            00000215
 SSPCON1                           00000215
 SSPCON2                           00000216
 SSPCON3                           00000217
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 75
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SSPDATPPS                         00000E21
 SSPDATPPS0                        00000000
 SSPDATPPS1                        00000001
@@ -3532,12 +4371,6 @@ STPT11                            00000003
 STPT12                            00000004
 STPT13                            00000005
 STPT14                            00000006
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 61
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 STPT2                             00000002
 STPT3                             00000003
 STPT4                             00000004
@@ -3557,6 +4390,12 @@ SYNC                              00000004
 T0CKIPPS                          00000E11
 T0CKIPPS0                         00000000
 T0CKIPPS1                         00000001
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 76
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 T0CKIPPS2                         00000002
 T0CKIPPS3                         00000003
 T0CKIPPS4                         00000004
@@ -3591,12 +4430,6 @@ T2CKPOL                           00000006
 T2CKPS0                           00000004
 T2CKPS1                           00000005
 T2CKPS2                           00000006
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 62
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 T2CKSYNC                          00000005
 T2CLKCON                          0000001E
 T2CON                             0000001C
@@ -3616,6 +4449,12 @@ T2OUTPS1                          00000001
 T2OUTPS2                          00000002
 T2OUTPS3                          00000003
 T2PPS                             00000E18
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 77
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 T2PPS0                            00000000
 T2PPS1                            00000001
 T2PPS2                            00000002
@@ -3650,12 +4489,6 @@ T3GPPS4                           00000004
 T3GSPM                            00000004
 T3GSS0                            00000000
 T3GSS1                            00000001
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 63
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 T3GTM                             00000005
 T3GVAL                            00000002
 T3SYNC                            00000002
@@ -3675,6 +4508,12 @@ T4MODE0                           00000000
 T4MODE1                           00000001
 T4MODE2                           00000002
 T4MODE3                           00000003
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 78
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 T4MODE4                           00000004
 T4ON                              00000007
 T4OUTPS0                          00000000
@@ -3709,12 +4548,6 @@ T5GGO_NOT_DONE                    00000003
 T5GPOL                            00000006
 T5GPPS                            00000E1D
 T5GPPS0                           00000000
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 64
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 T5GPPS1                           00000001
 T5GPPS2                           00000002
 T5GPPS3                           00000003
@@ -3734,6 +4567,12 @@ T6CLKCON                          0000041E
 T6CON                             0000041C
 T6CS0                             00000000
 T6CS1                             00000001
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 79
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 T6CS2                             00000002
 T6CS3                             00000003
 T6HLT                             0000041D
@@ -3761,19 +4600,15 @@ T6RSEL2                           00000002
 T6RSEL3                           00000003
 T6RST                             0000041F
 T6TMR                             0000041A
-TGRH                              0000023E
-TGRL                              000001C0
+TEMP16                            00000021
+TEMP8                             00000020
+TGRH                              0000002D
+TGRL                              0000002F
 TMR0                              00000015
 TMR0CS                            00000005
 TMR0IE                            00000005
 TMR0IF                            00000002
 TMR0SE                            00000004
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 65
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TMR1                              00000016
 TMR1CS0                           00000006
 TMR1CS1                           00000007
@@ -3791,6 +4626,12 @@ TMR2IE                            00000001
 TMR2IF                            00000001
 TMR2ON                            00000007
 TMR3CS0                           00000006
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 80
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TMR3CS1                           00000007
 TMR3GE                            00000007
 TMR3GIE                           00000007
@@ -3827,12 +4668,6 @@ TRIGSEL0                          00000004
 TRIGSEL1                          00000005
 TRIGSEL2                          00000006
 TRIGSEL3                          00000007
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 66
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TRISA                             0000008C
 TRISA0                            00000000
 TRISA1                            00000001
@@ -3850,6 +4685,12 @@ TRISC5                            00000005
 TRMT                              00000001
 TS                                00000002
 TSEL0                             00000000
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 81
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TSEL1                             00000001
 TSEL2                             00000002
 TSEL3                             00000003
@@ -3879,19 +4720,13 @@ VREGPM0                           00000000
 VREGPM1                           00000001
 W                                 00000000
 WCOL                              00000007
-WDATA                             00000020
+WDATA                             00000023
 WDTCON0                           00000711
 WDTCON1                           00000712
 WDTCS0                            00000004
 WDTCS1                            00000005
 WDTCS2                            00000006
 WDTPS0                            00000001
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 67
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 WDTPS1                            00000002
 WDTPS2                            00000003
 WDTPS3                            00000004
@@ -3909,6 +4744,12 @@ WDTPSCNT17                        00000001
 WDTPSCNT2                         00000002
 WDTPSCNT3                         00000003
 WDTPSCNT4                         00000004
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 82
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 WDTPSCNT5                         00000005
 WDTPSCNT6                         00000006
 WDTPSCNT7                         00000007
@@ -3930,7 +4771,7 @@ WDTWINDOW2                        00000002
 WINDOW0                           00000000
 WINDOW1                           00000001
 WINDOW2                           00000002
-WITHIN_TRIGGER                    
+WITHIN_WINDOW                     
 WPOL                              00000004
 WPUA                              0000020C
 WPUA0                             00000000
@@ -3945,18 +4786,13 @@ WPUC1                             00000001
 WPUC2                             00000002
 WPUC3                             00000003
 WPUC4                             00000004
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 68
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 WPUC5                             00000005
 WR                                00000001
 WREG                              00000009
 WREG_SHAD                         00000FE5
 WREN                              00000002
 WRERR                             00000003
+WRGB                              00000000
 WS                                00000001
 WS2813_HIDR                       HIDC4
 WS2813_LAT                        LATC4
@@ -3967,6 +4803,12 @@ WSEL2                             00000002
 WSEL3                             00000003
 WSEL4                             00000004
 WUE                               00000001
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 83
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 XOR1                              00000001
 XOR10                             00000002
 XOR11                             00000003
@@ -4004,12 +4846,6 @@ Z20                               00000000
 Z21                               00000001
 Z210                              00000002
 Z211                              00000003
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 69
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 Z212                              00000004
 Z213                              00000005
 Z214                              00000006
@@ -4026,6 +4862,12 @@ Z29                               00000001
 ZCD1CON                           0000011C
 ZCD1EN                            00000007
 ZCD1INTN                          00000000
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 84
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 ZCD1INTP                          00000001
 ZCD1OUT                           00000005
 ZCD1POL                           00000004
@@ -4040,6 +4882,8 @@ _BORV_HI                          00003BFF
 _BORV_LO                          00003FFF
 _CLKOUTEN_OFF                     00003FFF
 _CLKOUTEN_ON                      000037FF
+_COLORIZOR_00AE                   000000AE
+_COLORIZOR_00D8                   000000D8
 _CONFIG1                          00008007
 _CONFIG2                          00008008
 _CONFIG3                          00008009
@@ -4063,12 +4907,6 @@ _LPBOR_OFF                        00003FFF
 _LPBOR_ON                         000037FF
 _LVP_OFF                          00001FFF
 _LVP_ON                           00003FFF
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 70
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _MCLRE_OFF                        00003FBF
 _MCLRE_ON                         00003FFF
 _PLLEN_OFF                        00003EFF
@@ -4083,6 +4921,12 @@ _STVREN_OFF                       00003DFF
 _STVREN_ON                        00003FFF
 _WDTCCS_LFINTOSC                  000007FF
 _WDTCCS_MFINTOSC                  00000FFF
+MPASM 5.77               COLORIZE_ANALOG.ASM   7-21-2018  21:33:50         PAGE 85
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _WDTCCS_SWC                       00003FFF
 _WDTCPS_WDTCPS0                   00003FE0
 _WDTCPS_WDTCPS1                   00003FE1
@@ -4122,16 +4966,10 @@ _WRT_HALF                         00003FFD
 _WRT_OFF                          00003FFF
 _ZCD_OFF                          00003FFF
 _ZCD_ON                           00003F7F
-MPASM 5.77               COLORIZE_ANALOG.ASM   7-12-2018  17:51:29         PAGE 71
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 __16F1615                         00000001
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
-Messages :    23 reported,     0 suppressed
+Messages :    15 reported,     0 suppressed
 
 
