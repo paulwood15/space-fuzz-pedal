@@ -1,10 +1,11 @@
 Message[310] C:\PROGRAM FILES (X86)\MICROCHIP\MPLABX\V4.20\MPASMX\P16F1615.INC 10031 : Superseding current maximum RAM and RAM map.
 Message[302] C:\USERS\PAUL WOOD\DOCUMENTS\GIT\SPACE-FUZZ-PEDAL\UTILMACROS.INC 8 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 196 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 198 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 200 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 215 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 265 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 202 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 204 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 206 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 221 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 94 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 94 : Register in operand not in bank 0.  Ensure that bank bits are correct.
 Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 60 : Register in operand not in bank 0.  Ensure that bank bits are correct.
 Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 72 : Register in operand not in bank 0.  Ensure that bank bits are correct.
 Message[302] ..\WS2813-FIRMWARE\WS2813.ASM 76 : Register in operand not in bank 0.  Ensure that bank bits are correct.

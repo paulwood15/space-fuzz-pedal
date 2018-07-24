@@ -5,8 +5,10 @@
         <group>
             <file>file:/C:/Users/Paul%20Wood/Documents/Git/space-fuzz-pedal/UtilMacros.inc</file>
             <file>file:/C:/Users/Paul%20Wood/Documents/Git/space-fuzz-pedal/UtilRoutines.asm</file>
+            <file>file:/C:/Users/Paul%20Wood/Documents/Git/ws2813-firmware/WS2813.asm</file>
             <file>file:/C:/Users/Paul%20Wood/Documents/Git/space-fuzz-pedal/colorize_analog.asm</file>
             <file>file:/C:/Users/Paul%20Wood/Documents/Git/space-fuzz-pedal/UtilRoutines.inc</file>
+            <file>file:/C:/Users/Paul%20Wood/Documents/Git/space-fuzz-pedal/WS2813.inc</file>
         </group>
     </open-files>
 </project-private>

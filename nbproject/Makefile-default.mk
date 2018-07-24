@@ -98,7 +98,7 @@ ${OBJECTDIR}/_ext/739432619/WS2813.o: ../ws2813-firmware/WS2813.asm  nbproject/M
 	@${MKDIR} "${OBJECTDIR}/_ext/739432619" 
 	@${RM} ${OBJECTDIR}/_ext/739432619/WS2813.o.d 
 	@${RM} ${OBJECTDIR}/_ext/739432619/WS2813.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/_ext/739432619/WS2813.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_SIMULATOR=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/_ext/739432619/WS2813.lst\" -e\"${OBJECTDIR}/_ext/739432619/WS2813.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/_ext/739432619/WS2813.o\" \"../ws2813-firmware/WS2813.asm\" 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/_ext/739432619/WS2813.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_PK3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/_ext/739432619/WS2813.lst\" -e\"${OBJECTDIR}/_ext/739432619/WS2813.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/_ext/739432619/WS2813.o\" \"../ws2813-firmware/WS2813.asm\" 
 	@${DEP_GEN} -d "${OBJECTDIR}/_ext/739432619/WS2813.o"
 	@${FIXDEPS} "${OBJECTDIR}/_ext/739432619/WS2813.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
@@ -106,7 +106,7 @@ ${OBJECTDIR}/colorize_analog.o: colorize_analog.asm  nbproject/Makefile-${CND_CO
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/colorize_analog.o.d 
 	@${RM} ${OBJECTDIR}/colorize_analog.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/colorize_analog.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_SIMULATOR=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/colorize_analog.lst\" -e\"${OBJECTDIR}/colorize_analog.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/colorize_analog.o\" \"colorize_analog.asm\" 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/colorize_analog.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_PK3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/colorize_analog.lst\" -e\"${OBJECTDIR}/colorize_analog.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/colorize_analog.o\" \"colorize_analog.asm\" 
 	@${DEP_GEN} -d "${OBJECTDIR}/colorize_analog.o"
 	@${FIXDEPS} "${OBJECTDIR}/colorize_analog.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
@@ -114,7 +114,7 @@ ${OBJECTDIR}/UtilRoutines.o: UtilRoutines.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/UtilRoutines.o.d 
 	@${RM} ${OBJECTDIR}/UtilRoutines.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/UtilRoutines.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_SIMULATOR=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/UtilRoutines.lst\" -e\"${OBJECTDIR}/UtilRoutines.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/UtilRoutines.o\" \"UtilRoutines.asm\" 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/UtilRoutines.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_PK3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/UtilRoutines.lst\" -e\"${OBJECTDIR}/UtilRoutines.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/UtilRoutines.o\" \"UtilRoutines.asm\" 
 	@${DEP_GEN} -d "${OBJECTDIR}/UtilRoutines.o"
 	@${FIXDEPS} "${OBJECTDIR}/UtilRoutines.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
@@ -150,7 +150,7 @@ endif
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
 dist/${CND_CONF}/${IMAGE_TYPE}/space-fuzz-pedal.${IMAGE_TYPE}.${OUTPUT_SUFFIX}: ${OBJECTFILES}  nbproject/Makefile-${CND_CONF}.mk    
 	@${MKDIR} dist/${CND_CONF}/${IMAGE_TYPE} 
-	${MP_LD} $(MP_EXTRA_LD_PRE)   -p$(MP_PROCESSOR_OPTION)  -w -x -u_DEBUG -z__ICD2RAM=1 -m"${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"   -z__MPLAB_BUILD=1  -z__MPLAB_DEBUG=1 -z__MPLAB_DEBUGGER_SIMULATOR=1 $(MP_LINKER_DEBUG_OPTION) -odist/${CND_CONF}/${IMAGE_TYPE}/space-fuzz-pedal.${IMAGE_TYPE}.${OUTPUT_SUFFIX}  ${OBJECTFILES_QUOTED_IF_SPACED}     
+	${MP_LD} $(MP_EXTRA_LD_PRE)   -p$(MP_PROCESSOR_OPTION)  -w -x -u_DEBUG -z__ICD2RAM=1 -m"${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"   -z__MPLAB_BUILD=1  -z__MPLAB_DEBUG=1 -z__MPLAB_DEBUGGER_PK3=1 $(MP_LINKER_DEBUG_OPTION) -odist/${CND_CONF}/${IMAGE_TYPE}/space-fuzz-pedal.${IMAGE_TYPE}.${OUTPUT_SUFFIX}  ${OBJECTFILES_QUOTED_IF_SPACED}     
 else
 dist/${CND_CONF}/${IMAGE_TYPE}/space-fuzz-pedal.${IMAGE_TYPE}.${OUTPUT_SUFFIX}: ${OBJECTFILES}  nbproject/Makefile-${CND_CONF}.mk   
 	@${MKDIR} dist/${CND_CONF}/${IMAGE_TYPE} 

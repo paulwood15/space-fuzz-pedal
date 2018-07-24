@@ -1,4 +1,4 @@
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE  1
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00001 #include UtilRoutines.inc
                       00001 
                       00002     
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE  2
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -116,7 +116,7 @@ Message[310]: Superseding current maximum RAM and RAM map.
                       00031         ENDM
                       00032         
                       00033 LSF16   MACRO   NUM, NUMBITS
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE  3
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -175,7 +175,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00084         MOVWF   (VAR)
                       00085         MOVLW   high (CONST)
                       00086         MOVWF   (VAR)+1
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE  4
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -234,7 +234,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00137         MOVLW   LOW (CONST)
                       00138         SUBWF   (DST), F
                       00139         MOVLW   HIGH (CONST)
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE  5
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE  5
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -293,7 +293,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00190 INC16   MACRO   DST        
                       00191         INCFSZ  (DST),W         ; Add one to low byte
                       00192         DECF    (DST)+1,F       ; No carry (negates next step)
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE  6
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE  6
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -334,12 +334,12 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00032 
                       00033 ; CONFIG1
                       00034 ; __config 0xFFFC
-8007   37FC           00035  __CONFIG _CONFIG1, _FOSC_INTOSC & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _BOREN_ON & _CLKOUTEN_ON & _IESO_O
-                            N & _FCMEN_ON
+8007   3FFC           00035  __CONFIG _CONFIG1, _FOSC_INTOSC & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _BOREN_ON & _CLKOUTEN_OFF & _IESO_
+                            ON & _FCMEN_ON
                       00036 ; CONFIG2
                       00037 ; __config 0xFFFF
-8008   3FFF           00038  __CONFIG _CONFIG2, _WRT_OFF & _PPS1WAY_ON & _ZCD_OFF & _PLLEN_ON & _STVREN_ON & _BORV_LO & _LPBOR_OFF &
-                             _LVP_ON
+8008   1FFF           00038  __CONFIG _CONFIG2, _WRT_OFF & _PPS1WAY_ON & _ZCD_OFF & _PLLEN_ON & _STVREN_ON & _BORV_LO & _LPBOR_OFF &
+                             _LVP_OFF
                       00039 ; CONFIG3
                       00040 ; __config 0xFF9F
 8009   3F9F           00041  __CONFIG _CONFIG3, _WDTCPS_WDTCPS1F & _WDTE_OFF & _WDTCWS_WDTCWSSW & _WDTCCS_SWC
@@ -352,7 +352,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00048 RES_VECT  CODE    0x0000            ; processor reset vector
 0000   3180           00049     PAGESEL START
 0001   2???           00050     GOTO    START                   ; go to beginning of program     
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE  7
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE  7
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -394,417 +394,427 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00084         NOP
                       00085         ENDM
                       00086         
-                      00087 SWAP_SHAD_HCOPY MACRO   
-                      00088         BANKSEL WREG_HCOPY                      ; save wreg
-                      00089         MOVWF   WREG_HCOPY
-                      00090         
-                      00091         
-                      00092         ENDM
-                      00093         
-                      00094 ;*******************************************************************************
-                      00095 ;                           VARIABLE DEFINITIONS
-                      00096 ;*******************************************************************************
-                      00097 #define HIGH_SZ 15
-                      00098 #define LOW_SZ  10
+                      00087 RENDER_CLEANUP  MACRO   
+                      00088         BANKSEL T1CON
+                      00089         BCF         T1CON, TMR1ON           ; turn off T1 counting
+                      00090         BANKSEL TMR1L
+                      00091         MOVLF   TMR1L, low TMR1_OFFSET  ; set TMR1 for set FPS 
+                      00092         MOVLF   TMR1H, high TMR1_OFFSET ; set TMR1 for set FPS 
+                      00093         BANKSEL LATC
+                      00094         BCF         LATC, WS2813_LAT        ; make sure data pin is LOW
+                      00095         BANKSEL PIR1
+                      00096         BCF         PIR1,TMR1IF             ; clear TMR1 interrupt flag
+                      00097         ENDM
+                      00098         
                       00099         
-                      00100         
-  000020F0            00101 FSR_BUFFER_START    EQU 0x2000 + (GPR_SIZE * 3) ; linear addressing != address on memory map    
-                      00102                                                 ; lin_mem_start + (GPR_size * bank_n)
-                      00103                                                 ; ex: start in BANK0 -> bank_n = 0, BANK1 -> bank_n = 1
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE  8
+                      00100 ;*******************************************************************************
+                      00101 ;                           VARIABLE DEFINITIONS
+                      00102 ;*******************************************************************************
+                      00103 #define HIGH_SZ 15
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE  8
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00104                                                 
-  000020A0            00105 FSR_WRGB    EQU 0x20A0  ; FSR address for WRGB 
+                      00104 #define LOW_SZ  10
+                      00105         
                       00106         
-                      00107 ; Register variables
-                      00108 REGISTERS   UDATA   0x120               
-0120                  00109 WRGB        RES 3               ; reserve 24bits for RGB color (IN G,R,B FORMAT)
-0123                  00110 LEDCOUNT    RES 1               ; copy of bank selection to save context
-0124                  00111 FRAMECOUNT  RES 1
-0125                  00112 WRITE_COUNT RES 1               ; reserve 1byte for write counter
-                      00113  
-                      00114 ; HALT_RENDER CONTEXT SAVING
-0126                  00115 STATUS_HCOPY    RES 1           ; copy of STATUS register for when the interrupt gets halted from ROI bi
+  000020F0            00107 FSR_BUFFER_START    EQU 0x2000 + (GPR_SIZE * 3) ; linear addressing != address on memory map    
+                      00108                                                 ; lin_mem_start + (GPR_size * bank_n)
+                      00109                                                 ; ex: start in BANK0 -> bank_n = 0, BANK1 -> bank_n = 1
+                      00110                                                 
+  000020A0            00111 FSR_WRGB    EQU 0x20A0  ; FSR address for WRGB 
+                      00112         
+                      00113 ; Register variables
+                      00114 REGISTERS   UDATA   0x120               
+0120                  00115 WRGB        RES 3               ; reserve 24bits for RGB color (IN G,R,B FORMAT)
+0123                  00116 LEDCOUNT    RES 1               ; copy of bank selection to save context
+0124                  00117 FRAMECOUNT  RES 1
+0125                  00118 WRITE_COUNT RES 1               ; reserve 1byte for write counter
+                      00119  
+                      00120 ; HALT_RENDER CONTEXT SAVING
+0126                  00121 STATUS_HCOPY    RES 1           ; copy of STATUS register for when the interrupt gets halted from ROI bi
                             t
-0127                  00116 WREG_HCOPY      RES 1           ; copy of WREG register for when the interrupt gets halted from ROI bit
-0128                  00117 BSR_HCOPY       RES 1           ; copy of BSR register for when the interrupt gets halted from ROI bit
-0129                  00118 PCLATH_HCOPY    RES 1           ; copy of PCLATH register for when the interrupt gets halted from ROI bi
+0127                  00122 WREG_HCOPY      RES 1           ; copy of WREG register for when the interrupt gets halted from ROI bit
+0128                  00123 BSR_HCOPY       RES 1           ; copy of BSR register for when the interrupt gets halted from ROI bit
+0129                  00124 PCLATH_HCOPY    RES 1           ; copy of PCLATH register for when the interrupt gets halted from ROI bi
                             t
-012A                  00119 FSR0L_HCOPY     RES 1
-012B                  00120 FSR0H_HCOPY     RES 1
-012C                  00121 FSR1L_HCOPY     RES 1
-012D                  00122 FSR1H_HCOPY     RES 1
-                      00123     
-                      00124 ; RENDER CONFIGURATION  REGISTER 
-                      00125     ; bits 7-2:
-                      00126     ;   NOT IMPLEMENTED
-                      00127     ;
-                      00128     ; bit 0:
-                      00129     ;   RWM<1> (Render Write Mode)
-                      00130     ;   1 = solid color mode - use WRGB
-                      00131     ;   0 = normal frame operation
-                      00132     ;
-                      00133     ; bit 1:
-                      00134     ;   ROI<1> (Render On Interrupt) - not working
-                      00135     ;   1 = render on interrup
-                      00136     ;   0 = wait for FBCC to be set
-                      00137     ;
-012E                  00138 RENDER_CON  RES 1       
-                      00139     
-                      00140         
-                      00141 ; RENDER STATUS REGISTER
-                      00142     ; bit 7:
-                      00143     ;   FBCC<1> (Frame Buffer Calculations Complete)
-                      00144     ;   1 = calculations complete
-                      00145     ;   0 = calculations in progress
-                      00146     ;
-                      00147     ; bit 6:
-                      00148     ;   FPSTM<1> (FPS Target Met)
-                      00149     ;   1 = FPS target met
-                      00150     ;   0 = FPS target not met - calculations may be in progress
-                      00151     ;
-                      00152     ; bit 5:
-                      00153     ;   FRC<1> (Frame Render Complete)
-                      00154     ;   1 = frame render from interrupt complete
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE  9
+012A                  00125 FSR0L_HCOPY     RES 1
+012B                  00126 FSR0H_HCOPY     RES 1
+012C                  00127 FSR1L_HCOPY     RES 1
+012D                  00128 FSR1H_HCOPY     RES 1
+                      00129     
+                      00130 ; RENDER CONFIGURATION  REGISTER 
+                      00131     ; bits 7-2:
+                      00132     ;   NOT IMPLEMENTED
+                      00133     ;
+                      00134     ; bit 0:
+                      00135     ;   RWM<1> (Render Write Mode)
+                      00136     ;   1 = solid color mode - use WRGB
+                      00137     ;   0 = normal frame operation
+                      00138     ;
+                      00139     ; bit 1:
+                      00140     ;   ROI<1> (Render On Interrupt)
+                      00141     ;   1 = render on interrup
+                      00142     ;   0 = wait for FBCC to be set
+                      00143     ;
+012E                  00144 RENDER_CON  RES 1       
+                      00145     
+                      00146         
+                      00147 ; RENDER STATUS REGISTER
+                      00148     ; bit 7:
+                      00149     ;   FBCC<1> (Frame Buffer Calculations Complete)
+                      00150     ;   1 = calculations complete
+                      00151     ;   0 = calculations in progress
+                      00152     ;
+                      00153     ; bit 6:
+                      00154     ;   FPSTM<1> (FPS Target Met)
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE  9
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00155     ;   0 = frame rendering still in progress
-                      00156     ;
-                      00157     ; bit 4:
-                      00158     ;   FRH<1> (Frame Render Halted)
-                      00159     ;   1 = Frame rendering process (interrupt) has been halted to allow for another process to finish b
-                            efore 
-                      00160     ;       the frame is written.
-                      00161     ;   0 = Frame rendering process operating normally.
+                      00155     ;   1 = FPS target met
+                      00156     ;   0 = FPS target not met - calculations may be in progress
+                      00157     ;
+                      00158     ; bit 5:
+                      00159     ;   FRC<1> (Frame Render Complete)
+                      00160     ;   1 = frame render from interrupt complete
+                      00161     ;   0 = frame rendering still in progress
                       00162     ;
-                      00163     ; bits 3-0:
-                      00164     ;   NOT IMPLEMENTED
-                      00165     ;
-012F                  00166 RENDER_STATUS   RES 1
-                      00167    
-                      00168    
-                      00169 ; BUFFER
-                      00170 ; MUST be manually allocated for NUM_LEDS starting at 0x1A0. For each bank, 
-                      00171 ; use 80 bytes (depends on processor). Use L/H notation for 2 banks, L/M/H 
-                      00172 ; for 3, LL/LM/MM/ and so on for more than 3 banks. Will be accessed indirectly.
-                      00173 BUFFERL UDATA   0x1A0   
-01A0                  00174 BUFFERL RES 80
-                      00175 BUFFERM UDATA   0x220
-0220                  00176 BUFFERM RES 80
-                      00177 BUFFERH UDATA   0x2A0   
-02A0                  00178 BUFFERH RES 20    
-                      00179 
-                      00180         
-                      00181 ;*******************************************************************************
-                      00182 ;                              INITIALIZATION
-                      00183 ;*******************************************************************************
-                      00184 RENDER  CODE            
-                      00185  
-0000                  00186 INITIAL:
-                      00187 ; CLOCK CONFIGURATION
-0000   0021           00188     BANKSEL OSCCON
-                      00189     MOVLF   OSCCON, b'11111000'     ; set HS internal clock 
+                      00163     ; bit 4:
+                      00164     ;   FRH<1> (Frame Render Halted) - not used yet
+                      00165     ;   1 = Frame rendering process (interrupt) has been halted to allow for another process to finish b
+                            efore 
+                      00166     ;       the frame is written.
+                      00167     ;   0 = Frame rendering process operating normally.
+                      00168     ;
+                      00169     ; bits 3-0:
+                      00170     ;   NOT IMPLEMENTED
+                      00171     ;
+012F                  00172 RENDER_STATUS   RES 1
+                      00173    
+                      00174    
+                      00175 ; BUFFER
+                      00176 ; MUST be manually allocated for NUM_LEDS starting at 0x1A0. For each bank, 
+                      00177 ; use 80 bytes (depends on processor). Use L/H notation for 2 banks, L/M/H 
+                      00178 ; for 3, LL/LM/MM/ and so on for more than 3 banks. Will be accessed indirectly.
+                      00179 BUFFERL UDATA   0x1A0   
+01A0                  00180 BUFFERL RES 80
+                      00181 BUFFERM UDATA   0x220
+0220                  00182 BUFFERM RES 80
+                      00183 BUFFERH UDATA   0x2A0   
+02A0                  00184 BUFFERH RES 20    
+                      00185 
+                      00186         
+                      00187 ;*******************************************************************************
+                      00188 ;                              INITIALIZATION
+                      00189 ;*******************************************************************************
+                      00190 RENDER  CODE            
+                      00191  
+0000                  00192 INITIAL:
+                      00193 ; CLOCK CONFIGURATION
+0000   0021           00194     BANKSEL OSCCON
+                      00195     MOVLF   OSCCON, b'11111000'     ; set HS internal clock 
 0001   0021               M         BANKSEL OSCCON
 0002   30F8               M         MOVLW   b'11111000'
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0003   0099               M         MOVWF   OSCCON
-                      00190     
-                      00191 ; PIN INITIALIZATION
-                      00192     ;PORTC
-0004   0020           00193     BANKSEL PORTC
-0005   018E           00194     CLRF    PORTC                   ; clear PORTC
-0006   0021           00195     BANKSEL TRISC
+                      00196     
+                      00197 ; PIN INITIALIZATION
+                      00198     ;PORTC
+0004   0020           00199     BANKSEL PORTC
+0005   018E           00200     CLRF    PORTC                   ; clear PORTC
+0006   0021           00201     BANKSEL TRISC
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0007   120E           00196     BCF     TRISC, WS2813_LAT       ; set WS2813_PIN as the output pin for serial data
-0008   0026           00197     BANKSEL SLRCONC
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0009   018E           00198     CLRF    SLRCONC                 ; allow for maximum slew rate
-000A   0028           00199     BANKSEL HIDRVC
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 10
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 10
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-000B   160E           00200     BSF     HIDRVC, WS2813_HIDR     ; enable high current drive for C4
-                      00201    
-                      00202     
-                      00203 ; TIMER1 CONFIGURATION
-000C   0020           00204     BANKSEL T1CON
-000D   0198           00205     CLRF    T1CON                   ; set TMR1 to use Fosc as clock - enable TMR1
-                      00206                                     ; when first frame starts to get written to
-000E   0199           00207     CLRF    T1GCON                  ; enable T1GE, active high, set gate source 
-                      00208                                     ; to T1G pin (RA4). RA4 controlled by RA5.
-000F   0020           00209     BANKSEL TMR1L
-                      00210     MOVLF   TMR1L, low TMR1_OFFSET  ; set TMR1 for set FPS 
+0007   120E           00202     BCF     TRISC, WS2813_LAT       ; set WS2813_PIN as the output pin for serial data
+0008   0026           00203     BANKSEL SLRCONC
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0009   018E           00204     CLRF    SLRCONC                 ; allow for maximum slew rate
+000A   0028           00205     BANKSEL HIDRVC
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000B   160E           00206     BSF     HIDRVC, WS2813_HIDR     ; enable high current drive for C4
+                      00207    
+                      00208     
+                      00209 ; TIMER1 CONFIGURATION
+000C   0020           00210     BANKSEL T1CON
+000D   0198           00211     CLRF    T1CON                   ; set TMR1 to use Fosc as clock - enable TMR1
+                      00212                                     ; when first frame starts to get written to
+000E   0199           00213     CLRF    T1GCON                  ; enable T1GE, active high, set gate source 
+                      00214                                     ; to T1G pin (RA4). RA4 controlled by RA5.
+000F   0020           00215     BANKSEL TMR1L
+                      00216     MOVLF   TMR1L, low TMR1_OFFSET  ; set TMR1 for set FPS 
 0010   0020               M         BANKSEL TMR1L
 0011   3000               M         MOVLW   low 0x0000
 0012   0096               M         MOVWF   TMR1L
-                      00211     MOVLF   TMR1H, high TMR1_OFFSET ; set TMR1 for set FPS 
+                      00217     MOVLF   TMR1H, high TMR1_OFFSET ; set TMR1 for set FPS 
 0013   0020               M         BANKSEL TMR1H
 0014   3000               M         MOVLW   high 0x0000
 0015   0097               M         MOVWF   TMR1H
-                      00212                                     
-                      00213 ; INTERRUPT CONFIGURATION
-0016   0021           00214     BANKSEL PIE1                    
+                      00218                                     
+                      00219 ; INTERRUPT CONFIGURATION
+0016   0021           00220     BANKSEL PIE1                    
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0017   1410           00215     BSF     PIE1, TMR1IE            ; set Timer1 peripherial interrupt enable
-0018   0020           00216     BANKSEL INTCON                  
-0019   170B           00217     BSF     INTCON, PEIE            ; allow peripherial interrupts
-                      00218     
-                      00219     
-                      00220     
-                      00221 ; VARIABLE INITIALIZATION
-001A   002?           00222     BANKSEL WRGB                    ; initalize COLOR variable to solid green
-                      00223     MOVLF   WRGB, 0x00              ; green 
+0017   1410           00221     BSF     PIE1, TMR1IE            ; set Timer1 peripherial interrupt enable
+0018   0020           00222     BANKSEL INTCON                  
+0019   170B           00223     BSF     INTCON, PEIE            ; allow peripherial interrupts
+                      00224     
+                      00225     
+                      00226     
+                      00227 ; VARIABLE INITIALIZATION
+001A   002?           00228     BANKSEL WRGB                    ; initalize COLOR variable to solid green
+                      00229     MOVLF   WRGB, 0x00              ; green 
 001B   002?               M         BANKSEL WRGB
 001C   3000               M         MOVLW   0x00
 001D   00??               M         MOVWF   WRGB
-                      00224     MOVLF   WRGB+1, 0x00            ; red 
+                      00230     MOVLF   WRGB+1, 0x00            ; red 
 001E   002?               M         BANKSEL WRGB+1
 001F   3000               M         MOVLW   0x00
 0020   00??               M         MOVWF   WRGB+1
-                      00225     MOVLF   WRGB+2, 0x00            ; blue 
+                      00231     MOVLF   WRGB+2, 0x00            ; blue 
 0021   002?               M         BANKSEL WRGB+2
 0022   3000               M         MOVLW   0x00
 0023   00??               M         MOVWF   WRGB+2
-                      00226     
-                      00227 ; RENDER CONFIGURATION
-0024   002?           00228     BANKSEL RENDER_CON
-                      00229     MOVLF   RENDER_CON, b'00000011' ; solid color mode and render on interrupt 
+                      00232     
+                      00233 ; RENDER CONFIGURATION
+0024   002?           00234     BANKSEL RENDER_CON
+                      00235     MOVLF   RENDER_CON, b'00000001' ; solid color mode and render on interrupt 
 0025   002?               M         BANKSEL RENDER_CON
-0026   3003               M         MOVLW   b'00000011'
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0026   3001               M         MOVLW   b'00000001'
 0027   00??               M         MOVWF   RENDER_CON
-                      00230     
-0028   0008           00231     RETURN    
-                      00232         
-                      00233     
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 11
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-                      00234     
-                      00235 ;*******************************************************************************
-                      00236 ;                         INTERRUPT SERVICE ROUTINE
-                      00237 ;*******************************************************************************
-0029                  00238 INTERRUPT_SERV:
-                      00239 ;TODO: ROI- wait for render bit. Context saving and switching to allow for completion of calculations if
+                      00236     
+0028   0008           00237     RETURN    
+                      00238         
+                      00239     
+                      00240     
+                      00241 ;*******************************************************************************
+                      00242 ;                         INTERRUPT SERVICE ROUTINE
+                      00243 ;*******************************************************************************
+0029                  00244 INTERRUPT_SERV:
+                      00245 ;TODO: ROI- wait for render bit. Context saving and switching to allow for completion of calculations if
                              
-                      00240 ;      writing interrupt gets called. See page 104 in datasheet for automatic context saving. If not abl
+                      00246 ;      writing interrupt gets called. See page 104 in datasheet for automatic context saving. If not abl
                             e to
-                      00241 ;      resume write interrupt context, add bits for RENDER_STATUS and write a render resume subroutine. 
-                      00242 ; FRAME RENDER OR EXTERNAL INTERRUPT
-0029   0020           00243     BANKSEL PIR1
-002A   1C10           00244     BTFSS   PIR1, TMR1IF            ; test whether it is a frame render flag
-002B   2???           00245      GOTO   EXTERN_INT
-002C   2???           00246     GOTO    RENDER_INT
-                      00247     
-002D                  00248 EXTERN_INT:
-002D   3180           00249     PAGESEL EXTERN_INTERRUPT_SERV
-002E   2???           00250     CALL    EXTERN_INTERRUPT_SERV   ; call external interrupt service routine
-002F   0009           00251     RETFIE
-                      00252     
-0030                  00253 RENDER_INT:
-                      00254 ;DISABLE EXTERNAL INTERRUPTS SO RENDERING PROCESS IS NOT INTERFERRED WITH
-0030   0020           00255     BANKSEL INTCON
-0031   138B           00256     BCF     INTCON, GIE             ; enable global interrupts now that initialization has completed
-                      00257     
-                      00258 ;CLEANUP
-0032   0020           00259     BANKSEL T1CON
-0033   1018           00260     BCF     T1CON, TMR1ON           ; turn off T1 counting
-0034   0020           00261     BANKSEL TMR1L
-                      00262     MOVLF   TMR1L, low TMR1_OFFSET  ; set TMR1 for set FPS 
-0035   0020               M         BANKSEL TMR1L
-0036   3000               M         MOVLW   low 0x0000
-0037   0096               M         MOVWF   TMR1L
-                      00263     MOVLF   TMR1H, high TMR1_OFFSET ; set TMR1 for set FPS 
-0038   0020               M         BANKSEL TMR1H
-0039   3000               M         MOVLW   high 0x0000
-003A   0097               M         MOVWF   TMR1H
-003B   0022           00264     BANKSEL LATC
+                      00247 ;      resume write interrupt context, add bits for RENDER_STATUS and write a render resume subroutine. 
+                      00248 ; FRAME RENDER OR EXTERNAL INTERRUPT
+0029   0020           00249     BANKSEL PIR1
+002A   1C10           00250     BTFSS   PIR1, TMR1IF            ; test whether it is a frame render flag
+002B   2???           00251      GOTO   EXTERN_INT
+002C   2???           00252     GOTO    RENDER_INT
+                      00253     
+002D                  00254 EXTERN_INT:
+002D   3180           00255     PAGESEL EXTERN_INTERRUPT_SERV
+002E   2???           00256     CALL    EXTERN_INTERRUPT_SERV   ; call external interrupt service routine
+002F   0009           00257     RETFIE
+                      00258     
+0030                  00259 RENDER_INT:
+                      00260 ;SKIP THIS FRAME?
+0030   002?           00261     BANKSEL RENDER_CON
+0031   1880           00262     BTFSC   RENDER_CON, ROI         ; check if render on interrupt is clear. Active high. If clear, chec
+                            k FBCC.
+0032   2???           00263      GOTO   CONTINUE_RENDER 
+0033   1B80           00264     BTFSC   RENDER_STATUS, FBCC     ; check if frame buffer calculations are complete. Exit interrupt, s
+                            kip 
+0034   2???           00265      GOTO   CONTINUE_RENDER         ; this frame, if frame calculations are incomplete. 
+                      00266     RENDER_CLEANUP
+0035   0020               M         BANKSEL T1CON
+0036   1018               M         BCF         T1CON, TMR1ON           ; turn off T1 counting
+0037   0020               M         BANKSEL TMR1L
+                          M         MOVLF   TMR1L, low TMR1_OFFSET  ; set TMR1 for set FPS 
+0038   0020               M         BANKSEL TMR1L
+0039   3000               M         MOVLW   low 0x0000
+003A   0096               M         MOVWF   TMR1L
+                          M         MOVLF   TMR1H, high TMR1_OFFSET ; set TMR1 for set FPS 
+003B   0020               M         BANKSEL TMR1H
+003C   3000               M         MOVLW   high 0x0000
+003D   0097               M         MOVWF   TMR1H
+003E   0022               M         BANKSEL LATC
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-003C   120E           00265     BCF     LATC, WS2813_LAT        ; make sure data pin is LOW
-003D   0020           00266     BANKSEL PIR1
-003E   1010           00267     BCF     PIR1,TMR1IF             ; clear TMR1 interrupt flag
-                      00268     
-                      00269 ; FRAME PREPARATION
-003F   002?           00270     BANKSEL RENDER_CON
-0040   1C00           00271     BTFSS   RENDER_CON, RWM
-0041   2???           00272      GOTO   NORMAL_OPERATION
-0042   2???           00273     GOTO    SOLID_COLOR
-0043                  00274 NORMAL_OPERATION:
-                      00275     MOVLF   FSR0H, high FSR_BUFFER_START        ; set FSR0 to correct memory location
-0043   0020               M         BANKSEL FSR0H
-0044   3020               M         MOVLW   high FSR_BUFFER_START
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 12
+003F   120E               M         BCF         LATC, WS2813_LAT        ; make sure data pin is LOW
+0040   0020               M         BANKSEL PIR1
+0041   1010               M         BCF         PIR1,TMR1IF             ; clear TMR1 interrupt flag
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 12
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0045   0085               M         MOVWF   FSR0H
-                      00276     MOVLF   FSR0L, low FSR_BUFFER_START         ; for linear addressing
-0046   0020               M         BANKSEL FSR0L
-0047   30F0               M         MOVLW   low FSR_BUFFER_START
-0048   0084               M         MOVWF   FSR0L
-0049   2???           00277     GOTO    WRITE
-004A                  00278 SOLID_COLOR:
-                      00279     MOVLF   FSR0H, high FSR_WRGB                ; set FSR0 to WRGB for solid color rendering mode
-004A   0020               M         BANKSEL FSR0H
-004B   3020               M         MOVLW   high FSR_WRGB
-004C   0085               M         MOVWF   FSR0H
-                      00280     MOVLF   FSR0L, low FSR_WRGB                 ; 
-004D   0020               M         BANKSEL FSR0L
-004E   30A0               M         MOVLW   low FSR_WRGB
-004F   0084               M         MOVWF   FSR0L
-                      00281     
-                      00282 ;    BANKSEL RENDER_STATUS
-                      00283 ;    BCF            RENDER_STATUS, FBCC
-                      00284 ;    BANKSEL RENDER_CON
-                      00285 ;    BCF            RENDER_CON, ROI
-                      00286 ;; CHECK ROI BIT
-                      00287 ;    BANKSEL RENDER_STATUS
-                      00288 ;    BTFSS   RENDER_STATUS, FBCC                        ; check if frame buffer calculations have comple
-                            ted
-                      00289 ;     GOTO   ROI_CHECK
-                      00290 ;    GOTO    CONTINUE_RENDER
-                      00291 ;    
-                      00292 ;ROI_CHECK:
-                      00293 ;    BANKSEL RENDER_STATUS
-                      00294 ;    BTFSS   RENDER_STATUS, ROI                 ; check rendering mode
-                      00295 ;     PAGESEL HALT_RENDER
-                      00296 ;     CALL    HALT_RENDER                       ; wait for calculations 
-                      00297 ;    
-                      00298 ;    
-                      00299 ;CONTINUE_RENDER:
-                      00300     
-                      00301 ; RENDER FRAME
-0050                  00302 WRITE:
-0050   3180           00303     PAGESEL WRITE_FRAME
-0051   2???           00304     CALL    WRITE_FRAME             ; display next frame
-                      00305    
-                      00306 ; EXIT INTERRUPT
-0052   002?           00307     BANKSEL RENDER_STATUS
-0053   1680           00308     BSF     RENDER_STATUS, FRC      ; indicate that the frame rendering has completed
-                      00309     
-0054   0009           00310     RETFIE                          ; exit interrupt
-                      00311 
-                      00312     
-                      00313 ;*******************************************************************************
-                      00314 ;                                  MAIN
-                      00315 ;*  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *  *
-0055                  00316 START:
-0055   3180           00317     PAGESEL INITIAL
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 13
+                      00267 ;    BANKSEL INTCON
+                      00268 ;    BSF            INTCON, GIE
+0042   0009           00269     RETFIE
+                      00270      
+                      00271      
+0043                  00272 CONTINUE_RENDER:
+                      00273 ;DISABLE PERIPHERAL INTERRUPTS 
+0043   0020           00274     BANKSEL INTCON                  
+0044   130B           00275     BCF     INTCON, PEIE            
+                      00276     
+                      00277 ;CLEANUP
+                      00278     RENDER_CLEANUP
+0045   0020               M         BANKSEL T1CON
+0046   1018               M         BCF         T1CON, TMR1ON           ; turn off T1 counting
+0047   0020               M         BANKSEL TMR1L
+                          M         MOVLF   TMR1L, low TMR1_OFFSET  ; set TMR1 for set FPS 
+0048   0020               M         BANKSEL TMR1L
+0049   3000               M         MOVLW   low 0x0000
+004A   0096               M         MOVWF   TMR1L
+                          M         MOVLF   TMR1H, high TMR1_OFFSET ; set TMR1 for set FPS 
+004B   0020               M         BANKSEL TMR1H
+004C   3000               M         MOVLW   high 0x0000
+004D   0097               M         MOVWF   TMR1H
+004E   0022               M         BANKSEL LATC
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+004F   120E               M         BCF         LATC, WS2813_LAT        ; make sure data pin is LOW
+0050   0020               M         BANKSEL PIR1
+0051   1010               M         BCF         PIR1,TMR1IF             ; clear TMR1 interrupt flag
+                      00279     
+                      00280 ; FRAME PREPARATION
+0052   002?           00281     BANKSEL RENDER_CON
+0053   1C00           00282     BTFSS   RENDER_CON, RWM
+0054   2???           00283      GOTO   NORMAL_OPERATION
+0055   2???           00284     GOTO    SOLID_COLOR
+0056                  00285 NORMAL_OPERATION:
+                      00286     MOVLF   FSR0H, high FSR_BUFFER_START        ; set FSR0 to correct memory location
+0056   0020               M         BANKSEL FSR0H
+0057   3020               M         MOVLW   high FSR_BUFFER_START
+0058   0085               M         MOVWF   FSR0H
+                      00287     MOVLF   FSR0L, low FSR_BUFFER_START         ; for linear addressing
+0059   0020               M         BANKSEL FSR0L
+005A   30F0               M         MOVLW   low FSR_BUFFER_START
+005B   0084               M         MOVWF   FSR0L
+005C   2???           00288     GOTO    WRITE
+005D                  00289 SOLID_COLOR:
+                      00290     MOVLF   FSR0H, high FSR_WRGB                ; set FSR0 to WRGB for solid color rendering mode
+005D   0020               M         BANKSEL FSR0H
+005E   3020               M         MOVLW   high FSR_WRGB
+005F   0085               M         MOVWF   FSR0H
+                      00291     MOVLF   FSR0L, low FSR_WRGB                 ; 
+0060   0020               M         BANKSEL FSR0L
+0061   30A0               M         MOVLW   low FSR_WRGB
+0062   0084               M         MOVWF   FSR0L
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 13
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0056   2???           00318     CALL    INITIAL                 ; initialize PIC
-0057   3180           00319     PAGESEL EXTERN_INITIAL
-0058   2???           00320     CALL    EXTERN_INITIAL
-0059   0020           00321     BANKSEL INTCON
-005A   178B           00322     BSF     INTCON, GIE             ; enable global interrupts now that initialization has completed
-                      00323     
-005B   002?           00324     BANKSEL FRAMECOUNT
-                      00325     MOVLF   FRAMECOUNT, 1
-005C   002?               M         BANKSEL FRAMECOUNT
-005D   3001               M         MOVLW   1
-005E   00??               M         MOVWF   FRAMECOUNT
-                      00326     MOVLF   LEDCOUNT, NUM_LEDS
-005F   002?               M         BANKSEL LEDCOUNT
-0060   303C               M         MOVLW   60
-0061   00??               M         MOVWF   LEDCOUNT
+                      00292     
+                      00293 ; RENDER FRAME
+0063                  00294 WRITE:
+0063   3180           00295     PAGESEL WRITE_FRAME
+0064   2???           00296     CALL    WRITE_FRAME             ; display next frame
+                      00297    
+                      00298 ; EXIT INTERRUPT
+0065   002?           00299     BANKSEL RENDER_STATUS
+0066   1680           00300     BSF     RENDER_STATUS, FRC      ; indicate that the frame rendering has completed
+                      00301     
+0067   0009           00302     RETFIE                          ; exit interrupt
+                      00303 
+                      00304     
+                      00305 ;*******************************************************************************
+                      00306 ;                                  MAIN
+                      00307 ;*  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *  *
+0068                  00308 START:
+0068   3180           00309     PAGESEL INITIAL
+0069   2???           00310     CALL    INITIAL                 ; initialize PIC
+006A   3180           00311     PAGESEL EXTERN_INITIAL
+006B   2???           00312     CALL    EXTERN_INITIAL
+006C   0020           00313     BANKSEL INTCON
+006D   178B           00314     BSF     INTCON, GIE             ; enable global interrupts now that initialization has completed
+                      00315     
+006E   002?           00316     BANKSEL FRAMECOUNT
+                      00317     MOVLF   FRAMECOUNT, 1
+006F   002?               M         BANKSEL FRAMECOUNT
+0070   3001               M         MOVLW   1
+0071   00??               M         MOVWF   FRAMECOUNT
+                      00318     MOVLF   LEDCOUNT, NUM_LEDS
+0072   002?               M         BANKSEL LEDCOUNT
+0073   303C               M         MOVLW   60
+0074   00??               M         MOVWF   LEDCOUNT
+                      00319     
+                      00320     
+                      00321 ;*  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *  *
+                      00322 ;                              RENDER_LOOP
+                      00323 ;*******************************************************************************
+0075                  00324 RENDER_LOOP:    
+0075   0020           00325     BANKSEL T1CON
+0076   1418           00326     BSF     T1CON, TMR1ON           ; T1 start counting- start rendering process
                       00327     
                       00328     
-                      00329 ;*  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *  *
-                      00330 ;                              RENDER_LOOP
-                      00331 ;*******************************************************************************
-0062                  00332 RENDER_LOOP:    
-                      00333     MOVLF   FSR0H, high FSR_BUFFER_START        ; set FSR0 to correct memory location
-0062   0020               M         BANKSEL FSR0H
-0063   3020               M         MOVLW   high FSR_BUFFER_START
-0064   0085               M         MOVWF   FSR0H
-                      00334     MOVLF   FSR0L, low FSR_BUFFER_START         ; for linear addressing
-0065   0020               M         BANKSEL FSR0L
-0066   30F0               M         MOVLW   low FSR_BUFFER_START
-0067   0084               M         MOVWF   FSR0L
-0068   0020           00335     BANKSEL T1CON
-0069   1418           00336     BSF     T1CON, TMR1ON           ; T1 start counting- start rendering process
-                      00337     
+                      00329 ;START FRAME BUFFER CALCULATIONS
+0077   3180           00330     PAGESEL DO_RENDER
+0078   2???           00331     CALL    DO_RENDER
+0079   002?           00332     BANKSEL RENDER_STATUS
+007A   1780           00333     BSF     RENDER_STATUS, FBCC     ; calculations complete
+                      00334     
+                      00335 ;WAIT FOR FRAME RENDER TO FINISH
+007B   1E80           00336     BTFSS   RENDER_STATUS, FRC      ; check whether the frame has completed rendering
+007C   2???           00337     GOTO    $-1                     ; check again   
                       00338     
-                      00339 ;START FRAME BUFFER CALCULATIONS
-006A   3180           00340     PAGESEL DO_RENDER
-006B   2???           00341     CALL    DO_RENDER
-006C   002?           00342     BANKSEL RENDER_STATUS
-006D   1780           00343     BSF     RENDER_STATUS, FBCC     ; calculations complete
-                      00344     
-                      00345 ;WAIT FOR FRAME RENDER TO FINISH
-006E   1E80           00346     BTFSS   RENDER_STATUS, FRC      ; check whether the frame has completed rendering
-006F   2???           00347     GOTO    $-1                     ; check again   
-                      00348     
-                      00349 ;ENABLE GLOBAL INTERRUPTS
-0070   0020           00350     BANKSEL INTCON
-0071   178B           00351     BSF     INTCON, GIE             ; enable global interrupts now that initialization has completed
-                      00352     
-                      00353 ;RENDER CLEANUP                            
-0072   1380           00354     BCF     RENDER_STATUS, FBCC
-0073   1280           00355     BCF     RENDER_STATUS, FRC
-0074   2???           00356     GOTO    RENDER_LOOP
-                      00357  
-                      00358     
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 14
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 14
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00359     
-                      00360 WRITE CODE 
-                      00361 ;*******************************************************************************
-                      00362 ;                               WRITE_FRAME
-                      00363 ;*******************************************************************************    
-0000                  00364 WRITE_FRAME:
-0000   002?           00365     BANKSEL WRITE_COUNT
-                      00366     MOVLF   WRITE_COUNT, NUM_LEDS   ; copy NUM_LEDS to WRITE_COUNT
+                      00339 ;ENABLE PERIPHERAL INTERRUPTS 
+007D   0020           00340     BANKSEL INTCON                  
+007E   170B           00341     BSF     INTCON, PEIE
+                      00342     
+                      00343 ;RENDER CLEANUP                            
+007F   1380           00344     BCF     RENDER_STATUS, FBCC
+0080   1280           00345     BCF     RENDER_STATUS, FRC
+0081   2???           00346     GOTO    RENDER_LOOP
+                      00347  
+                      00348     
+                      00349     
+                      00350 WRITE CODE 
+                      00351 ;*******************************************************************************
+                      00352 ;                               WRITE_FRAME
+                      00353 ;*******************************************************************************    
+0000                  00354 WRITE_FRAME:
+0000   002?           00355     BANKSEL WRITE_COUNT
+                      00356     MOVLF   WRITE_COUNT, NUM_LEDS   ; copy NUM_LEDS to WRITE_COUNT
 0001   002?               M         BANKSEL WRITE_COUNT
 0002   303C               M         MOVLW   60
 0003   00??               M         MOVWF   WRITE_COUNT
-                      00367     
-0004                  00368 WRITE_LED:
-0004   002?           00369     BANKSEL RENDER_CON
-0005   2???           00370     CALL    WS2813_WRITE            ; write out LED to strip
-0006   1800           00371     BTFSC   RENDER_CON, RWM
-0007   313D           00372      ADDFSR 0, -3
-0008   0B??           00373     DECFSZ  WRITE_COUNT, F                  
-0009   2???           00374     GOTO    WRITE_LED               ; repeat until all LEDs have been written to
-000A   0008           00375     RETURN
-                      00376 
-                      00377 
-                      00378 
-                      00379 ;*******************************************************************************
-                      00380 ;                                WS2813_WRITE
-                      00381 ;*******************************************************************************
-000B                  00382 WS2813_WRITE:
-                      00383     ;
-                      00384     ;
-                      00385     ;
-                      00386     ; GREEN
-000B   1F80           00387     BTFSS   INDF0, 7
-000C   2???           00388     GOTO    $+HIGH_SZ
-                      00389     BITHIGH
+                      00357     
+0004                  00358 WRITE_LED:
+0004   002?           00359     BANKSEL RENDER_CON
+0005   2???           00360     CALL    WS2813_WRITE            ; write out LED to strip
+0006   1800           00361     BTFSC   RENDER_CON, RWM
+0007   313D           00362      ADDFSR 0, -3
+0008   0B??           00363     DECFSZ  WRITE_COUNT, F                  
+0009   2???           00364     GOTO    WRITE_LED               ; repeat until all LEDs have been written to
+000A   0008           00365     RETURN
+                      00366 
+                      00367 
+                      00368 
+                      00369 ;*******************************************************************************
+                      00370 ;                                WS2813_WRITE
+                      00371 ;*******************************************************************************
+000B                  00372 WS2813_WRITE:
+                      00373     ;
+                      00374     ;
+                      00375     ;
+                      00376     ; GREEN
+000B   1F80           00377     BTFSS   INDF0, 7
+000C   2???           00378     GOTO    $+HIGH_SZ
+                      00379     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 000D   160E               M         BSF     LATC, WS2813_LAT
 000E   0000               M         NOP
@@ -814,22 +824,22 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0012   0000               M         NOP
 0013   0000               M         NOP
 0014   0000               M         NOP
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 0015   0000               M         NOP
 0016   0000               M         NOP
 0017   0000               M         NOP
 0018   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0019   120E               M         BCF     LATC, WS2813_LAT
-001A   2???           00390     GOTO    $+LOW_SZ
-                      00391     BITLOW
+001A   2???           00380     GOTO    $+LOW_SZ
+                      00381     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 001B   160E               M         BSF     LATC, WS2813_LAT
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 15
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
 001C   0000               M         NOP
 001D   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
@@ -839,10 +849,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0021   0000               M         NOP
 0022   0000               M         NOP
 0023   0000               M         NOP
-                      00392     
-0024   1F00           00393     BTFSS   INDF0, 6
-0025   2???           00394     GOTO    $+HIGH_SZ
-                      00395     BITHIGH
+                      00382     
+0024   1F00           00383     BTFSS   INDF0, 6
+0025   2???           00384     GOTO    $+HIGH_SZ
+                      00385     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0026   160E               M         BSF     LATC, WS2813_LAT
 0027   0000               M         NOP
@@ -858,8 +868,8 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0031   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0032   120E               M         BCF     LATC, WS2813_LAT
-0033   2???           00396     GOTO    $+LOW_SZ
-                      00397     BITLOW
+0033   2???           00386     GOTO    $+LOW_SZ
+                      00387     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0034   160E               M         BSF     LATC, WS2813_LAT
 0035   0000               M         NOP
@@ -871,10 +881,16 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 003A   0000               M         NOP
 003B   0000               M         NOP
 003C   0000               M         NOP
-                      00398     
-003D   1E80           00399     BTFSS   INDF0, 5
-003E   2???           00400     GOTO    $+HIGH_SZ
-                      00401     BITHIGH
+                      00388     
+003D   1E80           00389     BTFSS   INDF0, 5
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 16
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+003E   2???           00390     GOTO    $+HIGH_SZ
+                      00391     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 003F   160E               M         BSF     LATC, WS2813_LAT
 0040   0000               M         NOP
@@ -883,12 +899,6 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0043   0000               M         NOP
 0044   0000               M         NOP
 0045   0000               M         NOP
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 16
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
 0046   0000               M         NOP
 0047   0000               M         NOP
 0048   0000               M         NOP
@@ -896,8 +906,8 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 004A   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 004B   120E               M         BCF     LATC, WS2813_LAT
-004C   2???           00402     GOTO    $+LOW_SZ
-                      00403     BITLOW
+004C   2???           00392     GOTO    $+LOW_SZ
+                      00393     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 004D   160E               M         BSF     LATC, WS2813_LAT
 004E   0000               M         NOP
@@ -909,10 +919,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0053   0000               M         NOP
 0054   0000               M         NOP
 0055   0000               M         NOP
-                      00404     
-0056   1E00           00405     BTFSS   INDF0, 4
-0057   2???           00406     GOTO    $+HIGH_SZ
-                      00407     BITHIGH
+                      00394     
+0056   1E00           00395     BTFSS   INDF0, 4
+0057   2???           00396     GOTO    $+HIGH_SZ
+                      00397     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0058   160E               M         BSF     LATC, WS2813_LAT
 0059   0000               M         NOP
@@ -928,10 +938,16 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0063   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0064   120E               M         BCF     LATC, WS2813_LAT
-0065   2???           00408     GOTO    $+LOW_SZ
-                      00409     BITLOW
+0065   2???           00398     GOTO    $+LOW_SZ
+                      00399     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0066   160E               M         BSF     LATC, WS2813_LAT
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 17
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 0067   0000               M         NOP
 0068   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
@@ -941,16 +957,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 006C   0000               M         NOP
 006D   0000               M         NOP
 006E   0000               M         NOP
-                      00410     
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 17
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-006F   1D80           00411     BTFSS   INDF0, 3
-0070   2???           00412     GOTO    $+HIGH_SZ
-                      00413     BITHIGH
+                      00400     
+006F   1D80           00401     BTFSS   INDF0, 3
+0070   2???           00402     GOTO    $+HIGH_SZ
+                      00403     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0071   160E               M         BSF     LATC, WS2813_LAT
 0072   0000               M         NOP
@@ -966,8 +976,8 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 007C   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 007D   120E               M         BCF     LATC, WS2813_LAT
-007E   2???           00414     GOTO    $+LOW_SZ
-                      00415     BITLOW
+007E   2???           00404     GOTO    $+LOW_SZ
+                      00405     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 007F   160E               M         BSF     LATC, WS2813_LAT
 0080   0000               M         NOP
@@ -979,10 +989,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0085   0000               M         NOP
 0086   0000               M         NOP
 0087   0000               M         NOP
-                      00416     
-0088   1D00           00417     BTFSS   INDF0, 2
-0089   2???           00418     GOTO    $+HIGH_SZ
-                      00419     BITHIGH
+                      00406     
+0088   1D00           00407     BTFSS   INDF0, 2
+0089   2???           00408     GOTO    $+HIGH_SZ
+                      00409     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 008A   160E               M         BSF     LATC, WS2813_LAT
 008B   0000               M         NOP
@@ -991,6 +1001,12 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 008E   0000               M         NOP
 008F   0000               M         NOP
 0090   0000               M         NOP
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 18
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 0091   0000               M         NOP
 0092   0000               M         NOP
 0093   0000               M         NOP
@@ -998,15 +1014,9 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0095   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0096   120E               M         BCF     LATC, WS2813_LAT
-0097   2???           00420     GOTO    $+LOW_SZ
-                      00421     BITLOW
+0097   2???           00410     GOTO    $+LOW_SZ
+                      00411     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 18
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
 0098   160E               M         BSF     LATC, WS2813_LAT
 0099   0000               M         NOP
 009A   0000               M         NOP
@@ -1017,10 +1027,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 009E   0000               M         NOP
 009F   0000               M         NOP
 00A0   0000               M         NOP
-                      00422     
-00A1   1C80           00423     BTFSS   INDF0, 1
-00A2   2???           00424     GOTO    $+HIGH_SZ
-                      00425     BITHIGH
+                      00412     
+00A1   1C80           00413     BTFSS   INDF0, 1
+00A2   2???           00414     GOTO    $+HIGH_SZ
+                      00415     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00A3   160E               M         BSF     LATC, WS2813_LAT
 00A4   0000               M         NOP
@@ -1036,8 +1046,8 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 00AE   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00AF   120E               M         BCF     LATC, WS2813_LAT
-00B0   2???           00426     GOTO    $+LOW_SZ
-                      00427     BITLOW
+00B0   2???           00416     GOTO    $+LOW_SZ
+                      00417     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00B1   160E               M         BSF     LATC, WS2813_LAT
 00B2   0000               M         NOP
@@ -1049,10 +1059,16 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 00B7   0000               M         NOP
 00B8   0000               M         NOP
 00B9   0000               M         NOP
-                      00428     
-00BA   1C00           00429     BTFSS   INDF0, 0
-00BB   2???           00430     GOTO    $+HIGH_SZ
-                      00431     BITHIGH
+                      00418     
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 19
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00BA   1C00           00419     BTFSS   INDF0, 0
+00BB   2???           00420     GOTO    $+HIGH_SZ
+                      00421     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00BC   160E               M         BSF     LATC, WS2813_LAT
 00BD   0000               M         NOP
@@ -1060,12 +1076,6 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 00BF   0000               M         NOP
 00C0   0000               M         NOP
 00C1   0000               M         NOP
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 19
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
 00C2   0000               M         NOP
 00C3   0000               M         NOP
 00C4   0000               M         NOP
@@ -1074,8 +1084,8 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 00C7   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00C8   120E               M         BCF     LATC, WS2813_LAT
-00C9   2???           00432     GOTO    $+LOW_SZ
-                      00433     BITLOW
+00C9   2???           00422     GOTO    $+LOW_SZ
+                      00423     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00CA   160E               M         BSF     LATC, WS2813_LAT
 00CB   0000               M         NOP
@@ -1087,14 +1097,14 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 00D0   0000               M         NOP
 00D1   0000               M         NOP
 00D2   0000               M         NOP
-                      00434     ;
-                      00435     ;
-                      00436     ;
-                      00437     ; RED
-00D3   3101           00438     ADDFSR  0, 1                    ; increment FSR0
-00D4   1F80           00439     BTFSS   INDF0, 7
-00D5   2???           00440     GOTO    $+HIGH_SZ
-                      00441     BITHIGH
+                      00424     ;
+                      00425     ;
+                      00426     ;
+                      00427     ; RED
+00D3   3101           00428     ADDFSR  0, 1                    ; increment FSR0
+00D4   1F80           00429     BTFSS   INDF0, 7
+00D5   2???           00430     GOTO    $+HIGH_SZ
+                      00431     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00D6   160E               M         BSF     LATC, WS2813_LAT
 00D7   0000               M         NOP
@@ -1109,9 +1119,15 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 00E0   0000               M         NOP
 00E1   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 20
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 00E2   120E               M         BCF     LATC, WS2813_LAT
-00E3   2???           00442     GOTO    $+LOW_SZ
-                      00443     BITLOW
+00E3   2???           00432     GOTO    $+LOW_SZ
+                      00433     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00E4   160E               M         BSF     LATC, WS2813_LAT
 00E5   0000               M         NOP
@@ -1119,20 +1135,14 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00E7   120E               M         BCF     LATC, WS2813_LAT
 00E8   0000               M         NOP
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 20
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
 00E9   0000               M         NOP
 00EA   0000               M         NOP
 00EB   0000               M         NOP
 00EC   0000               M         NOP
-                      00444     
-00ED   1F00           00445     BTFSS   INDF0, 6
-00EE   2???           00446     GOTO    $+HIGH_SZ
-                      00447     BITHIGH
+                      00434     
+00ED   1F00           00435     BTFSS   INDF0, 6
+00EE   2???           00436     GOTO    $+HIGH_SZ
+                      00437     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00EF   160E               M         BSF     LATC, WS2813_LAT
 00F0   0000               M         NOP
@@ -1148,8 +1158,8 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 00FA   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00FB   120E               M         BCF     LATC, WS2813_LAT
-00FC   2???           00448     GOTO    $+LOW_SZ
-                      00449     BITLOW
+00FC   2???           00438     GOTO    $+LOW_SZ
+                      00439     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 00FD   160E               M         BSF     LATC, WS2813_LAT
 00FE   0000               M         NOP
@@ -1161,13 +1171,19 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0103   0000               M         NOP
 0104   0000               M         NOP
 0105   0000               M         NOP
-                      00450     
-0106   1E80           00451     BTFSS   INDF0, 5
-0107   2???           00452     GOTO    $+HIGH_SZ
-                      00453     BITHIGH
+                      00440     
+0106   1E80           00441     BTFSS   INDF0, 5
+0107   2???           00442     GOTO    $+HIGH_SZ
+                      00443     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0108   160E               M         BSF     LATC, WS2813_LAT
 0109   0000               M         NOP
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 21
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 010A   0000               M         NOP
 010B   0000               M         NOP
 010C   0000               M         NOP
@@ -1178,16 +1194,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0111   0000               M         NOP
 0112   0000               M         NOP
 0113   0000               M         NOP
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 21
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0114   120E               M         BCF     LATC, WS2813_LAT
-0115   2???           00454     GOTO    $+LOW_SZ
-                      00455     BITLOW
+0115   2???           00444     GOTO    $+LOW_SZ
+                      00445     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0116   160E               M         BSF     LATC, WS2813_LAT
 0117   0000               M         NOP
@@ -1199,10 +1209,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 011C   0000               M         NOP
 011D   0000               M         NOP
 011E   0000               M         NOP
-                      00456     
-011F   1E00           00457     BTFSS   INDF0, 4
-0120   2???           00458     GOTO    $+HIGH_SZ
-                      00459     BITHIGH
+                      00446     
+011F   1E00           00447     BTFSS   INDF0, 4
+0120   2???           00448     GOTO    $+HIGH_SZ
+                      00449     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0121   160E               M         BSF     LATC, WS2813_LAT
 0122   0000               M         NOP
@@ -1218,8 +1228,8 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 012C   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 012D   120E               M         BCF     LATC, WS2813_LAT
-012E   2???           00460     GOTO    $+LOW_SZ
-                      00461     BITLOW
+012E   2???           00450     GOTO    $+LOW_SZ
+                      00451     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 012F   160E               M         BSF     LATC, WS2813_LAT
 0130   0000               M         NOP
@@ -1227,22 +1237,22 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0132   120E               M         BCF     LATC, WS2813_LAT
 0133   0000               M         NOP
-0134   0000               M         NOP
-0135   0000               M         NOP
-0136   0000               M         NOP
-0137   0000               M         NOP
-                      00462     
-0138   1D80           00463     BTFSS   INDF0, 3
-0139   2???           00464     GOTO    $+HIGH_SZ
-                      00465     BITHIGH
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-013A   160E               M         BSF     LATC, WS2813_LAT
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 22
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 22
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
+0134   0000               M         NOP
+0135   0000               M         NOP
+0136   0000               M         NOP
+0137   0000               M         NOP
+                      00452     
+0138   1D80           00453     BTFSS   INDF0, 3
+0139   2???           00454     GOTO    $+HIGH_SZ
+                      00455     BITHIGH
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+013A   160E               M         BSF     LATC, WS2813_LAT
 013B   0000               M         NOP
 013C   0000               M         NOP
 013D   0000               M         NOP
@@ -1256,8 +1266,8 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0145   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0146   120E               M         BCF     LATC, WS2813_LAT
-0147   2???           00466     GOTO    $+LOW_SZ
-                      00467     BITLOW
+0147   2???           00456     GOTO    $+LOW_SZ
+                      00457     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0148   160E               M         BSF     LATC, WS2813_LAT
 0149   0000               M         NOP
@@ -1269,10 +1279,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 014E   0000               M         NOP
 014F   0000               M         NOP
 0150   0000               M         NOP
-                      00468     
-0151   1D00           00469     BTFSS   INDF0, 2
-0152   2???           00470     GOTO    $+HIGH_SZ
-                      00471     BITHIGH
+                      00458     
+0151   1D00           00459     BTFSS   INDF0, 2
+0152   2???           00460     GOTO    $+HIGH_SZ
+                      00461     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0153   160E               M         BSF     LATC, WS2813_LAT
 0154   0000               M         NOP
@@ -1286,31 +1296,31 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 015C   0000               M         NOP
 015D   0000               M         NOP
 015E   0000               M         NOP
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 23
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 015F   120E               M         BCF     LATC, WS2813_LAT
-0160   2???           00472     GOTO    $+LOW_SZ
-                      00473     BITLOW
+0160   2???           00462     GOTO    $+LOW_SZ
+                      00463     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0161   160E               M         BSF     LATC, WS2813_LAT
 0162   0000               M         NOP
 0163   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0164   120E               M         BCF     LATC, WS2813_LAT
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 23
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
 0165   0000               M         NOP
 0166   0000               M         NOP
 0167   0000               M         NOP
 0168   0000               M         NOP
 0169   0000               M         NOP
-                      00474     
-016A   1C80           00475     BTFSS   INDF0, 1
-016B   2???           00476     GOTO    $+HIGH_SZ
-                      00477     BITHIGH
+                      00464     
+016A   1C80           00465     BTFSS   INDF0, 1
+016B   2???           00466     GOTO    $+HIGH_SZ
+                      00467     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 016C   160E               M         BSF     LATC, WS2813_LAT
 016D   0000               M         NOP
@@ -1326,8 +1336,8 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0177   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0178   120E               M         BCF     LATC, WS2813_LAT
-0179   2???           00478     GOTO    $+LOW_SZ
-                      00479     BITLOW
+0179   2???           00468     GOTO    $+LOW_SZ
+                      00469     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 017A   160E               M         BSF     LATC, WS2813_LAT
 017B   0000               M         NOP
@@ -1339,12 +1349,18 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0180   0000               M         NOP
 0181   0000               M         NOP
 0182   0000               M         NOP
-                      00480     
-0183   1C00           00481     BTFSS   INDF0, 0
-0184   2???           00482     GOTO    $+HIGH_SZ
-                      00483     BITHIGH
+                      00470     
+0183   1C00           00471     BTFSS   INDF0, 0
+0184   2???           00472     GOTO    $+HIGH_SZ
+                      00473     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0185   160E               M         BSF     LATC, WS2813_LAT
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 24
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 0186   0000               M         NOP
 0187   0000               M         NOP
 0188   0000               M         NOP
@@ -1355,17 +1371,11 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 018D   0000               M         NOP
 018E   0000               M         NOP
 018F   0000               M         NOP
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 24
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
 0190   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0191   120E               M         BCF     LATC, WS2813_LAT
-0192   2???           00484     GOTO    $+LOW_SZ
-                      00485     BITLOW
+0192   2???           00474     GOTO    $+LOW_SZ
+                      00475     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0193   160E               M         BSF     LATC, WS2813_LAT
 0194   0000               M         NOP
@@ -1377,14 +1387,14 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0199   0000               M         NOP
 019A   0000               M         NOP
 019B   0000               M         NOP
-                      00486     ;
-                      00487     ;
-                      00488     ;
-                      00489     ; BLUE
-019C   3101           00490     ADDFSR  0, 1                    ; increment FSR0
-019D   1F80           00491     BTFSS   INDF0, 7
-019E   2???           00492     GOTO    $+HIGH_SZ
-                      00493     BITHIGH
+                      00476     ;
+                      00477     ;
+                      00478     ;
+                      00479     ; BLUE
+019C   3101           00480     ADDFSR  0, 1                    ; increment FSR0
+019D   1F80           00481     BTFSS   INDF0, 7
+019E   2???           00482     GOTO    $+HIGH_SZ
+                      00483     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 019F   160E               M         BSF     LATC, WS2813_LAT
 01A0   0000               M         NOP
@@ -1400,10 +1410,16 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01AA   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 01AB   120E               M         BCF     LATC, WS2813_LAT
-01AC   2???           00494     GOTO    $+LOW_SZ
-                      00495     BITLOW
+01AC   2???           00484     GOTO    $+LOW_SZ
+                      00485     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 01AD   160E               M         BSF     LATC, WS2813_LAT
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 25
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 01AE   0000               M         NOP
 01AF   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
@@ -1413,16 +1429,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01B3   0000               M         NOP
 01B4   0000               M         NOP
 01B5   0000               M         NOP
-                      00496     
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 25
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-01B6   1F00           00497     BTFSS   INDF0, 6
-01B7   2???           00498     GOTO    $+HIGH_SZ
-                      00499     BITHIGH
+                      00486     
+01B6   1F00           00487     BTFSS   INDF0, 6
+01B7   2???           00488     GOTO    $+HIGH_SZ
+                      00489     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 01B8   160E               M         BSF     LATC, WS2813_LAT
 01B9   0000               M         NOP
@@ -1438,8 +1448,8 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01C3   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 01C4   120E               M         BCF     LATC, WS2813_LAT
-01C5   2???           00500     GOTO    $+LOW_SZ
-                      00501     BITLOW
+01C5   2???           00490     GOTO    $+LOW_SZ
+                      00491     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 01C6   160E               M         BSF     LATC, WS2813_LAT
 01C7   0000               M         NOP
@@ -1451,10 +1461,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01CC   0000               M         NOP
 01CD   0000               M         NOP
 01CE   0000               M         NOP
-                      00502     
-01CF   1E80           00503     BTFSS   INDF0, 5
-01D0   2???           00504     GOTO    $+HIGH_SZ
-                      00505     BITHIGH
+                      00492     
+01CF   1E80           00493     BTFSS   INDF0, 5
+01D0   2???           00494     GOTO    $+HIGH_SZ
+                      00495     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 01D1   160E               M         BSF     LATC, WS2813_LAT
 01D2   0000               M         NOP
@@ -1463,6 +1473,12 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01D5   0000               M         NOP
 01D6   0000               M         NOP
 01D7   0000               M         NOP
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 26
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 01D8   0000               M         NOP
 01D9   0000               M         NOP
 01DA   0000               M         NOP
@@ -1470,15 +1486,9 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01DC   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 01DD   120E               M         BCF     LATC, WS2813_LAT
-01DE   2???           00506     GOTO    $+LOW_SZ
-                      00507     BITLOW
+01DE   2???           00496     GOTO    $+LOW_SZ
+                      00497     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 26
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
 01DF   160E               M         BSF     LATC, WS2813_LAT
 01E0   0000               M         NOP
 01E1   0000               M         NOP
@@ -1489,10 +1499,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01E5   0000               M         NOP
 01E6   0000               M         NOP
 01E7   0000               M         NOP
-                      00508     
-01E8   1E00           00509     BTFSS   INDF0, 4
-01E9   2???           00510     GOTO    $+HIGH_SZ
-                      00511     BITHIGH
+                      00498     
+01E8   1E00           00499     BTFSS   INDF0, 4
+01E9   2???           00500     GOTO    $+HIGH_SZ
+                      00501     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 01EA   160E               M         BSF     LATC, WS2813_LAT
 01EB   0000               M         NOP
@@ -1508,8 +1518,8 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01F5   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 01F6   120E               M         BCF     LATC, WS2813_LAT
-01F7   2???           00512     GOTO    $+LOW_SZ
-                      00513     BITLOW
+01F7   2???           00502     GOTO    $+LOW_SZ
+                      00503     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 01F8   160E               M         BSF     LATC, WS2813_LAT
 01F9   0000               M         NOP
@@ -1521,10 +1531,16 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01FE   0000               M         NOP
 01FF   0000               M         NOP
 0200   0000               M         NOP
-                      00514     
-0201   1D80           00515     BTFSS   INDF0, 3
-0202   2???           00516     GOTO    $+HIGH_SZ
-                      00517     BITHIGH
+                      00504     
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 27
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0201   1D80           00505     BTFSS   INDF0, 3
+0202   2???           00506     GOTO    $+HIGH_SZ
+                      00507     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0203   160E               M         BSF     LATC, WS2813_LAT
 0204   0000               M         NOP
@@ -1532,12 +1548,6 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0206   0000               M         NOP
 0207   0000               M         NOP
 0208   0000               M         NOP
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 27
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
 0209   0000               M         NOP
 020A   0000               M         NOP
 020B   0000               M         NOP
@@ -1546,8 +1556,8 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 020E   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 020F   120E               M         BCF     LATC, WS2813_LAT
-0210   2???           00518     GOTO    $+LOW_SZ
-                      00519     BITLOW
+0210   2???           00508     GOTO    $+LOW_SZ
+                      00509     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0211   160E               M         BSF     LATC, WS2813_LAT
 0212   0000               M         NOP
@@ -1559,10 +1569,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0217   0000               M         NOP
 0218   0000               M         NOP
 0219   0000               M         NOP
-                      00520     
-021A   1D00           00521     BTFSS   INDF0, 2
-021B   2???           00522     GOTO    $+HIGH_SZ
-                      00523     BITHIGH
+                      00510     
+021A   1D00           00511     BTFSS   INDF0, 2
+021B   2???           00512     GOTO    $+HIGH_SZ
+                      00513     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 021C   160E               M         BSF     LATC, WS2813_LAT
 021D   0000               M         NOP
@@ -1578,9 +1588,15 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0227   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0228   120E               M         BCF     LATC, WS2813_LAT
-0229   2???           00524     GOTO    $+LOW_SZ
-                      00525     BITLOW
+0229   2???           00514     GOTO    $+LOW_SZ
+                      00515     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 28
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 022A   160E               M         BSF     LATC, WS2813_LAT
 022B   0000               M         NOP
 022C   0000               M         NOP
@@ -1591,16 +1607,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0230   0000               M         NOP
 0231   0000               M         NOP
 0232   0000               M         NOP
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 28
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-                      00526     
-0233   1C80           00527     BTFSS   INDF0, 1
-0234   2???           00528     GOTO    $+HIGH_SZ
-                      00529     BITHIGH
+                      00516     
+0233   1C80           00517     BTFSS   INDF0, 1
+0234   2???           00518     GOTO    $+HIGH_SZ
+                      00519     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0235   160E               M         BSF     LATC, WS2813_LAT
 0236   0000               M         NOP
@@ -1616,8 +1626,8 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0240   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0241   120E               M         BCF     LATC, WS2813_LAT
-0242   2???           00530     GOTO    $+LOW_SZ
-                      00531     BITLOW
+0242   2???           00520     GOTO    $+LOW_SZ
+                      00521     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0243   160E               M         BSF     LATC, WS2813_LAT
 0244   0000               M         NOP
@@ -1629,10 +1639,10 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0249   0000               M         NOP
 024A   0000               M         NOP
 024B   0000               M         NOP
-                      00532     
-024C   1C00           00533     BTFSS   INDF0, 0
-024D   2???           00534     GOTO    $+HIGH_SZ
-                      00535     BITHIGH
+                      00522     
+024C   1C00           00523     BTFSS   INDF0, 0
+024D   2???           00524     GOTO    $+HIGH_SZ
+                      00525     BITHIGH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 024E   160E               M         BSF     LATC, WS2813_LAT
 024F   0000               M         NOP
@@ -1640,6 +1650,12 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0251   0000               M         NOP
 0252   0000               M         NOP
 0253   0000               M         NOP
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 29
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 0254   0000               M         NOP
 0255   0000               M         NOP
 0256   0000               M         NOP
@@ -1648,14 +1664,8 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0259   0000               M         NOP
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 025A   120E               M         BCF     LATC, WS2813_LAT
-025B   2???           00536     GOTO    $+LOW_SZ
-                      00537     BITLOW
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 29
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
+025B   2???           00526     GOTO    $+LOW_SZ
+                      00527     BITLOW
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 025C   160E               M         BSF     LATC, WS2813_LAT
 025D   0000               M         NOP
@@ -1667,43 +1677,49 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0262   0000               M         NOP
 0263   0000               M         NOP
 0264   0000               M         NOP
-                      00538     
-0265   3101           00539     ADDFSR  0, 1                    ; increment FSR0
-                      00540     
-0266   0008           00541     RETURN
-                      00542 
-                      00543 
-                      00544 ;HALT_RENDER:
-                      00545 ;; SAVE CONTEXT OF HALT SUBROUTINE
-                      00546 ;    CPYFF   BSR, BSR_HCOPY
-                      00547 ;    CPYFF   PCLATH,PCLATH_HCOPY 
-                      00548 ;    ;MOVLW   5                     
-                      00549 ;    ;ADDWF   PCL                               ; add to PC halt copy to continue after shadow register 
+                      00528     
+0265   3101           00529     ADDFSR  0, 1                    ; increment FSR0
+                      00530     
+0266   0008           00531     RETURN
+                      00532 
+                      00533 
+                      00534 ;HALT_RENDER:
+                      00535 ;; SAVE CONTEXT OF HALT SUBROUTINE
+                      00536 ;    CPYFF   BSR, BSR_HCOPY
+                      00537 ;    CPYFF   PCLATH,PCLATH_HCOPY 
+                      00538 ;    ;MOVLW   5                     
+                      00539 ;    ;ADDWF   PCL                               ; add to PC halt copy to continue after shadow register 
                             restoration
-                      00550 ;; RESTORE SHADOW REGISTERS - context in "DO_RENDER" to allow for the frame buffer calculations to compl
+                      00540 ;; RESTORE SHADOW REGISTERS - context in "DO_RENDER" to allow for the frame buffer calculations to compl
                             ete.
-                      00551 ;    BANKSEL PCLATH_SHAD
-                      00552 ;    SWAPF   PCLATH_SHAD, W
-                      00553 ;    BANKSEL PCLATH
-                      00554 ;    SWAPF   PCLATH, W
-                      00555 ;    BANKSEL STATUS_SHAD
-                      00556 ;    SWAPF   STATUS_SHAD, W
-                      00557 ;    BANKSEL STATUS
-                      00558 ;    SWAPF   STATUS, W
-                      00559 ;    BANKSEL BSR_SHAD
-                      00560 ;    SWAPF   BSR_SHAD, W
-                      00561 ;    BANKSEL BSR
-                      00562 ;    SWAPF   BSR, W
-                      00563 ;    BANKSEL WREG_SHAD
-                      00564 ;    SWAPF   WREG_SHAD, W
-                      00565 ;    BANKSEL WREG
-                      00566 ;    SWAPF   WREG, W
-                      00567 ;    
-                      00568 ;    RETURN
-                      00569 ;    
-                      00570     
-37FC 3FFF 3F9F        00571     END
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 30
+                      00541 ;    BANKSEL PCLATH_SHAD
+                      00542 ;    SWAPF   PCLATH_SHAD, W
+                      00543 ;    BANKSEL PCLATH
+                      00544 ;    SWAPF   PCLATH, W
+                      00545 ;    BANKSEL STATUS_SHAD
+                      00546 ;    SWAPF   STATUS_SHAD, W
+                      00547 ;    BANKSEL STATUS
+                      00548 ;    SWAPF   STATUS, W
+                      00549 ;    BANKSEL BSR_SHAD
+                      00550 ;    SWAPF   BSR_SHAD, W
+                      00551 ;    BANKSEL BSR
+                      00552 ;    SWAPF   BSR, W
+                      00553 ;    BANKSEL WREG_SHAD
+                      00554 ;    SWAPF   WREG_SHAD, W
+                      00555 ;    BANKSEL WREG
+                      00556 ;    SWAPF   WREG, W
+                      00557 ;    
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 30
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00558 ;    RETURN
+                      00559 ;    
+                      00560     
+3FFC 1FFF 3F9F        00561     END
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 31
 
 
 SYMBOL TABLE
@@ -1762,7 +1778,7 @@ ADD0                              00000000
 ADD1                              00000001
 ADD16                             
 ADD2                              00000002
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 31
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 32
 
 
 SYMBOL TABLE
@@ -1821,7 +1837,7 @@ AT1CC1H                           00000890
 AT1CC1IE                          00000000
 AT1CC1IF                          00000000
 AT1CC1L                           0000088F
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 32
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 33
 
 
 SYMBOL TABLE
@@ -1880,7 +1896,7 @@ AT1CP2S2                          00000002
 AT1CP3S0                          00000000
 AT1CP3S1                          00000001
 AT1CP3S2                          00000002
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 33
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 34
 
 
 SYMBOL TABLE
@@ -1939,7 +1955,7 @@ AT1MISSIE                         00000001
 AT1MISSIF                         00000001
 AT1MISSL                          0000080E
 AT1MODE                           00000000
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 34
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 35
 
 
 SYMBOL TABLE
@@ -1998,7 +2014,7 @@ AT1RES5                           00000005
 AT1RES6                           00000006
 AT1RES7                           00000007
 AT1RES8                           00000000
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 35
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 36
 
 
 SYMBOL TABLE
@@ -2057,7 +2073,7 @@ ATINPPS4                          00000004
 BAUD1CON                          0000019F
 BAUDCON                           0000019F
 BAUDCON1                          0000019F
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 36
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 37
 
 
 SYMBOL TABLE
@@ -2116,7 +2132,7 @@ C1POL                             00000004
 C1SP                              00000002
 C1SYNC                            00000000
 C2AS                              00000002
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 37
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 38
 
 
 SYMBOL TABLE
@@ -2175,7 +2191,7 @@ CC37                              00000007
 CC38                              00000000
 CC39                              00000001
 CC3EN                             00000007
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 38
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 39
 
 
 SYMBOL TABLE
@@ -2234,7 +2250,7 @@ CCPR2                             00000298
 CCPR2H                            00000299
 CCPR2L                            00000298
 CCPTMRS                           0000029E
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 39
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 40
 
 
 SYMBOL TABLE
@@ -2293,7 +2309,7 @@ CLC3GLS2                          00000F2C
 CLC3GLS3                          00000F2D
 CLC3IE                            00000002
 CLC3IF                            00000002
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 40
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 41
 
 
 SYMBOL TABLE
@@ -2349,15 +2365,16 @@ CM2CON0                           00000113
 CM2CON1                           00000114
 CMOUT                             00000115
 CMP16                             
+CONTINUE_RENDER                   00000043
 CP1S0                             00000000
 CP1S1                             00000001
-CP1S2                             00000002
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 41
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 42
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+CP1S2                             00000002
 CP2S0                             00000000
 CP2S1                             00000001
 CP2S2                             00000002
@@ -2410,13 +2427,13 @@ CRCDAT9                           00000001
 CRCDATH                           00000792
 CRCDATL                           00000791
 CRCDLEN0                          00000004
-CRCDLEN1                          00000005
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 42
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 43
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+CRCDLEN1                          00000005
 CRCDLEN2                          00000006
 CRCDLEN3                          00000007
 CRCEN                             00000007
@@ -2469,13 +2486,13 @@ CRCXORL                           00000797
 CRDCDAT7                          00000007
 CREN                              00000004
 CS                                00000000
-CS0                               00000000
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 43
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 44
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+CS0                               00000000
 CS1                               00000001
 CS2                               00000002
 CS3                               00000003
@@ -2528,13 +2545,13 @@ CWG1OCON0                         00000695
 CWG1OVRA                          00000004
 CWG1OVRB                          00000005
 CWG1OVRC                          00000006
-CWG1OVRD                          00000007
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 44
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 45
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+CWG1OVRD                          00000007
 CWG1POLA                          00000000
 CWG1POLB                          00000001
 CWG1POLC                          00000002
@@ -2587,13 +2604,13 @@ D4N                               00000006
 D4S0                              00000000
 D4S1                              00000001
 D4S2                              00000002
-D4S3                              00000003
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 45
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 46
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+D4S3                              00000003
 D4S4                              00000004
 D4S5                              00000005
 D4T                               00000007
@@ -2646,13 +2663,13 @@ DC4                               00000002
 DC5                               00000003
 DC6                               00000004
 DC7                               00000005
-DC8                               00000006
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 46
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 47
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+DC8                               00000006
 DC9                               00000007
 DC_SHAD                           00000001
 DEC16                             
@@ -2705,13 +2722,13 @@ FERR                              00000002
 FMT                               00000004
 FPSTM                             6
 FRAMECOUNT                        00000124
-FRC                               5
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 47
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 48
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+FRC                               5
 FREE                              00000004
 FRH                               4
 FSR0                              00000004
@@ -2764,13 +2781,13 @@ HADR3                             00000003
 HADR4                             00000004
 HADR5                             00000005
 HADR6                             00000006
-HADR7                             00000007
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 48
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 49
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+HADR7                             00000007
 HADR8                             00000000
 HADR9                             00000001
 HARD2                             00000002
@@ -2823,13 +2840,13 @@ INTE                              00000004
 INTEDG                            00000006
 INTERRUPT_SERV                    00000029
 INTF                              00000001
-INTM                              00000003
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 49
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 50
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+INTM                              00000003
 INTN                              00000003
 INTP                              00000004
 INTPPS                            00000E10
@@ -2882,13 +2899,13 @@ IOCCP                             00000397
 IOCCP0                            00000000
 IOCCP1                            00000001
 IOCCP2                            00000002
-IOCCP3                            00000003
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 50
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 51
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+IOCCP3                            00000003
 IOCCP4                            00000004
 IOCCP5                            00000005
 IOCCP6                            00000006
@@ -2941,13 +2958,13 @@ K310                              00000002
 K311                              00000003
 K312                              00000004
 K313                              00000005
-K314                              00000006
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 51
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 52
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+K314                              00000006
 K315                              00000007
 K32                               00000002
 K33                               00000003
@@ -3000,13 +3017,13 @@ LC1D2S5                           00000005
 LC1D3S0                           00000000
 LC1D3S1                           00000001
 LC1D3S2                           00000002
-LC1D3S3                           00000003
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 52
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 53
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LC1D3S3                           00000003
 LC1D3S4                           00000004
 LC1D3S5                           00000005
 LC1D4S0                           00000000
@@ -3059,13 +3076,13 @@ LC1MODE1                          00000001
 LC1MODE2                          00000002
 LC1OUT                            00000005
 LC1POL                            00000007
-LC2D1S0                           00000000
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 53
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 54
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LC2D1S0                           00000000
 LC2D1S1                           00000001
 LC2D1S2                           00000002
 LC2D1S3                           00000003
@@ -3118,13 +3135,13 @@ LC2G3D4N                          00000006
 LC2G3D4T                          00000007
 LC2G3POL                          00000002
 LC2G4D1N                          00000000
-LC2G4D1T                          00000001
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 54
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 55
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LC2G4D1T                          00000001
 LC2G4D2N                          00000002
 LC2G4D2T                          00000003
 LC2G4D3N                          00000004
@@ -3177,13 +3194,13 @@ LC3G2D1N                          00000000
 LC3G2D1T                          00000001
 LC3G2D2N                          00000002
 LC3G2D2T                          00000003
-LC3G2D3N                          00000004
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 55
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 56
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LC3G2D3N                          00000004
 LC3G2D3T                          00000005
 LC3G2D4N                          00000006
 LC3G2D4T                          00000007
@@ -3236,13 +3253,13 @@ LC4D4S1                           00000001
 LC4D4S2                           00000002
 LC4D4S3                           00000003
 LC4D4S4                           00000004
-LC4D4S5                           00000005
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 56
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 57
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LC4D4S5                           00000005
 LC4EN                             00000007
 LC4G1D1N                          00000000
 LC4G1D1T                          00000001
@@ -3295,13 +3312,13 @@ LFIOFR                            00000001
 LOW_SZ                            10
 LSAC0                             00000002
 LSAC1                             00000003
-LSBD0                             00000004
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 57
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 58
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LSBD0                             00000004
 LSBD1                             00000005
 LSF16                             
 LSHIFT16                          00000000
@@ -3349,18 +3366,18 @@ MSK5                              00000005
 MSK6                              00000006
 MSK7                              00000007
 NEG16                             
-NORMAL_OPERATION                  00000043
+NORMAL_OPERATION                  00000056
 NOT_BOR                           00000000
 NOT_PD                            00000003
 NOT_POR                           00000001
 NOT_RI                            00000002
-NOT_RMCLR                         00000003
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 58
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 59
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+NOT_RMCLR                         00000003
 NOT_RWDT                          00000004
 NOT_T1SYNC                        00000002
 NOT_TO                            00000004
@@ -3413,13 +3430,13 @@ OUT26                             00000002
 OUT27                             00000003
 OUT28                             00000004
 OUT29                             00000005
-OUT3                              00000003
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 59
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 60
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+OUT3                              00000003
 OUT30                             00000006
 OUT31                             00000007
 OUT32                             00000000
@@ -3472,13 +3489,13 @@ PER9                              00000001
 PERH0                             00000000
 PERH1                             00000001
 PERH2                             00000002
-PERH3                             00000003
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 60
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 61
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PERH3                             00000003
 PERH4                             00000004
 PERH5                             00000005
 PERH6                             00000006
@@ -3531,13 +3548,13 @@ PID1ACC29                         00000005
 PID1ACC3                          00000003
 PID1ACC30                         00000006
 PID1ACC31                         00000007
-PID1ACC32                         00000000
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 61
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 62
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PID1ACC32                         00000000
 PID1ACC33                         00000001
 PID1ACC34                         00000002
 PID1ACC4                          00000004
@@ -3590,13 +3607,13 @@ PID1K12                           00000002
 PID1K13                           00000003
 PID1K14                           00000004
 PID1K15                           00000005
-PID1K16                           00000006
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 62
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 63
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PID1K16                           00000006
 PID1K17                           00000007
 PID1K18                           00000000
 PID1K19                           00000001
@@ -3649,13 +3666,13 @@ PID1OUT1                          00000001
 PID1OUT10                         00000002
 PID1OUT11                         00000003
 PID1OUT12                         00000004
-PID1OUT13                         00000005
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 63
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 64
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PID1OUT13                         00000005
 PID1OUT14                         00000006
 PID1OUT15                         00000007
 PID1OUT16                         00000000
@@ -3708,13 +3725,13 @@ PID1SET6                          00000006
 PID1SET7                          00000007
 PID1SET8                          00000000
 PID1SET9                          00000001
-PID1SETH                          0000058D
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 64
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 65
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PID1SETH                          0000058D
 PID1SETL                          0000058C
 PID1Z1                            0000059B
 PID1Z10                           00000000
@@ -3767,13 +3784,13 @@ PIR1                              00000010
 PIR2                              00000011
 PIR3                              00000012
 PIR4                              00000013
-PIR5                              00000014
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 65
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 66
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PIR5                              00000014
 PLEN0                             00000000
 PLEN1                             00000001
 PLEN2                             00000002
@@ -3826,13 +3843,13 @@ PSCNT17                           00000001
 PSCNT2                            00000002
 PSCNT3                            00000003
 PSCNT4                            00000004
-PSCNT5                            00000005
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 66
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 67
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PSCNT5                            00000005
 PSCNT6                            00000006
 PSCNT7                            00000007
 PSCNT8                            00000000
@@ -3885,13 +3902,13 @@ RA0PPS                            00000E90
 RA0PPS0                           00000000
 RA0PPS1                           00000001
 RA0PPS2                           00000002
-RA0PPS3                           00000003
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 67
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 68
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RA0PPS3                           00000003
 RA0PPS4                           00000004
 RA1                               00000001
 RA1PPS                            00000E91
@@ -3944,13 +3961,13 @@ RC2PPS0                           00000000
 RC2PPS1                           00000001
 RC2PPS2                           00000002
 RC2PPS3                           00000003
-RC2PPS4                           00000004
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 68
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 69
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RC2PPS4                           00000004
 RC3                               00000003
 RC3PPS                            00000EA3
 RC3PPS0                           00000000
@@ -3982,9 +3999,10 @@ RCSTA                             0000019D
 RCSTA1                            0000019D
 RD                                00000000
 REN                               00000006
+RENDER_CLEANUP                    
 RENDER_CON                        0000012E
 RENDER_INT                        00000030
-RENDER_LOOP                       00000062
+RENDER_LOOP                       00000075
 RENDER_STATUS                     0000012F
 REPEAT                            00000006
 RES0                              00000000
@@ -4002,14 +4020,14 @@ RSEL0                             00000000
 RSEL1                             00000001
 RSEL2                             00000002
 RSEL3                             00000003
-RSEN                              00000001
-RSF16                             
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 69
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 70
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RSEN                              00000001
+RSF16                             
 RSHIFT16                          00000000
 RST                               00000005
 RWM                               0
@@ -4061,14 +4079,14 @@ SCANLADR12                        00000004
 SCANLADR13                        00000005
 SCANLADR14                        00000006
 SCANLADR15                        00000007
-SCANLADR2                         00000002
-SCANLADR3                         00000003
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 70
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 71
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SCANLADR2                         00000002
+SCANLADR3                         00000003
 SCANLADR4                         00000004
 SCANLADR5                         00000005
 SCANLADR6                         00000006
@@ -4120,14 +4138,14 @@ SHIFT3                            00000003
 SHIFT4                            00000004
 SHIFT5                            00000005
 SHIFT6                            00000006
-SHIFT7                            00000007
-SHIFT8                            00000000
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 71
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 72
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SHIFT7                            00000007
+SHIFT8                            00000000
 SHIFT9                            00000001
 SHIFTM                            00000001
 SHIFTNUM                          00000000
@@ -4179,14 +4197,14 @@ SMT1CPRH                          00000D90
 SMT1CPRL                          00000D8F
 SMT1CPRU                          00000D91
 SMT1CPRUP                         00000007
-SMT1CPW                           00000D92
-SMT1CPW0                          00000000
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 72
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 73
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SMT1CPW                           00000D92
+SMT1CPW0                          00000000
 SMT1CPW1                          00000001
 SMT1CPW10                         00000002
 SMT1CPW11                         00000003
@@ -4238,14 +4256,14 @@ SMT1PR17                          00000001
 SMT1PR18                          00000002
 SMT1PR19                          00000003
 SMT1PR2                           00000002
-SMT1PR20                          00000004
-SMT1PR21                          00000005
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 73
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 74
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SMT1PR20                          00000004
+SMT1PR21                          00000005
 SMT1PR22                          00000006
 SMT1PR23                          00000007
 SMT1PR3                           00000003
@@ -4297,14 +4315,14 @@ SMT1TMR20                         00000004
 SMT1TMR21                         00000005
 SMT1TMR22                         00000006
 SMT1TMR23                         00000007
-SMT1TMR3                          00000003
-SMT1TMR4                          00000004
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 74
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 75
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SMT1TMR3                          00000003
+SMT1TMR4                          00000004
 SMT1TMR5                          00000005
 SMT1TMR6                          00000006
 SMT1TMR7                          00000007
@@ -4356,14 +4374,14 @@ SMT2CPRL                          00000DA1
 SMT2CPRU                          00000DA3
 SMT2CPRUP                         00000007
 SMT2CPW                           00000DA4
-SMT2CPW0                          00000000
-SMT2CPW1                          00000001
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 75
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 76
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SMT2CPW0                          00000000
+SMT2CPW1                          00000001
 SMT2CPW10                         00000002
 SMT2CPW11                         00000003
 SMT2CPW12                         00000004
@@ -4415,14 +4433,14 @@ SMT2PR18                          00000002
 SMT2PR19                          00000003
 SMT2PR2                           00000002
 SMT2PR20                          00000004
-SMT2PR21                          00000005
-SMT2PR22                          00000006
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 76
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 77
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SMT2PR21                          00000005
+SMT2PR22                          00000006
 SMT2PR23                          00000007
 SMT2PR3                           00000003
 SMT2PR4                           00000004
@@ -4474,14 +4492,14 @@ SMT2TMR21                         00000005
 SMT2TMR22                         00000006
 SMT2TMR23                         00000007
 SMT2TMR3                          00000003
-SMT2TMR4                          00000004
-SMT2TMR5                          00000005
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 77
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 78
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SMT2TMR4                          00000004
+SMT2TMR5                          00000005
 SMT2TMR6                          00000006
 SMT2TMR7                          00000007
 SMT2TMR8                          00000000
@@ -4508,7 +4526,7 @@ SMTWINPPS1                        00000001
 SMTWINPPS2                        00000002
 SMTWINPPS3                        00000003
 SMTWINPPS4                        00000004
-SOLID_COLOR                       0000004A
+SOLID_COLOR                       0000005D
 SP1BRG                            0000019B
 SP1BRGH                           0000019C
 SP1BRGL                           0000019B
@@ -4533,14 +4551,14 @@ SSP1ADD2                          00000002
 SSP1ADD3                          00000003
 SSP1ADD4                          00000004
 SSP1ADD5                          00000005
-SSP1ADD6                          00000006
-SSP1ADD7                          00000007
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 78
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 79
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSP1ADD6                          00000006
+SSP1ADD7                          00000007
 SSP1BUF                           00000211
 SSP1BUF0                          00000000
 SSP1BUF1                          00000001
@@ -4592,19 +4610,19 @@ SSPM3                             00000003
 SSPMSK                            00000213
 SSPOV                             00000006
 SSPSSPPS                          00000E22
-SSPSSPPS0                         00000000
-SSPSSPPS1                         00000001
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 79
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 80
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSPSSPPS0                         00000000
+SSPSSPPS1                         00000001
 SSPSSPPS2                         00000002
 SSPSSPPS3                         00000003
 SSPSSPPS4                         00000004
 SSPSTAT                           00000214
-START                             00000055
+START                             00000068
 STATE                             00000002
 STATUS                            00000003
 STATUS_HCOPY                      00000126
@@ -4634,7 +4652,6 @@ STRC                              00000002
 STRD                              00000003
 SUB16                             
 SUBI16                            
-SWAP_SHAD_HCOPY                   
 SWDTEN                            00000000
 SYNC                              00000004
 T0CKIPPS                          00000E11
@@ -4652,13 +4669,13 @@ T1CKIPPS0                         00000000
 T1CKIPPS1                         00000001
 T1CKIPPS2                         00000002
 T1CKIPPS3                         00000003
-T1CKIPPS4                         00000004
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 80
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 81
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T1CKIPPS4                         00000004
 T1CKPS0                           00000004
 T1CKPS1                           00000005
 T1CON                             00000018
@@ -4711,13 +4728,13 @@ T2RSEL1                           00000001
 T2RSEL2                           00000002
 T2RSEL3                           00000003
 T2RST                             0000001F
-T2TMR                             0000001A
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 81
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 82
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T2TMR                             0000001A
 T3CKIPPS                          00000E19
 T3CKIPPS0                         00000000
 T3CKIPPS1                         00000001
@@ -4770,13 +4787,13 @@ T4PPS1                            00000001
 T4PPS2                            00000002
 T4PPS3                            00000003
 T4PPS4                            00000004
-T4PR                              00000414
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 82
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 83
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T4PR                              00000414
 T4PSYNC                           00000007
 T4RSEL0                           00000000
 T4RSEL1                           00000001
@@ -4829,13 +4846,13 @@ T6ON                              00000007
 T6OUTPS0                          00000000
 T6OUTPS1                          00000001
 T6OUTPS2                          00000002
-T6OUTPS3                          00000003
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 83
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 84
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T6OUTPS3                          00000003
 T6PPS                             00000E1E
 T6PPS0                            00000000
 T6PPS1                            00000001
@@ -4888,13 +4905,13 @@ TMR4IE                            00000001
 TMR4IF                            00000001
 TMR4ON                            00000007
 TMR5CS0                           00000006
-TMR5CS1                           00000007
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 84
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 85
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR5CS1                           00000007
 TMR5GE                            00000007
 TMR5GIE                           00000005
 TMR5GIF                           00000005
@@ -4947,13 +4964,13 @@ TX1STA                            0000019E
 TX9                               00000006
 TX9D                              00000000
 TXEN                              00000005
-TXIE                              00000004
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 85
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 86
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TXIE                              00000004
 TXIF                              00000004
 TXREG                             0000019A
 TXREG1                            0000019A
@@ -5006,13 +5023,13 @@ WDTTMR3                           00000006
 WDTTMR4                           00000007
 WDTWINDOW0                        00000000
 WDTWINDOW1                        00000001
-WDTWINDOW2                        00000002
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 86
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 87
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+WDTWINDOW2                        00000002
 WINDOW0                           00000000
 WINDOW1                           00000001
 WINDOW2                           00000002
@@ -5038,7 +5055,7 @@ WREG_SHAD                         00000FE5
 WREN                              00000002
 WRERR                             00000003
 WRGB                              00000120
-WRITE                             00000050
+WRITE                             00000063
 WRITE_COUNT                       00000125
 WRITE_FRAME                       00000000
 WRITE_LED                         00000004
@@ -5065,13 +5082,13 @@ XOR3                              00000003
 XOR4                              00000004
 XOR5                              00000005
 XOR6                              00000006
-XOR7                              00000007
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 87
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 88
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+XOR7                              00000007
 XOR8                              00000000
 XOR9                              00000001
 Z                                 00000002
@@ -5124,13 +5141,13 @@ _BOREN_ON                         00003FFF
 _BOREN_SBODEN                     00003BFF
 _BORV_HI                          00003BFF
 _BORV_LO                          00003FFF
-_CLKOUTEN_OFF                     00003FFF
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 88
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 89
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_CLKOUTEN_OFF                     00003FFF
 _CLKOUTEN_ON                      000037FF
 _CONFIG1                          00008007
 _CONFIG2                          00008008
@@ -5165,7 +5182,7 @@ _PWRTE_OFF                        00003FFF
 _PWRTE_ON                         00003FDF
 _REG_A                            0000007E
 _REG_B                            0000007C
-_RENDER_006F                      0000006F
+_RENDER_007C                      0000007C
 _STVREN_OFF                       00003DFF
 _STVREN_ON                        00003FFF
 _WDTCCS_LFINTOSC                  000007FF
@@ -5183,13 +5200,13 @@ _WDTCPS_WDTCPS4                   00003FE4
 _WDTCPS_WDTCPS5                   00003FE5
 _WDTCPS_WDTCPS6                   00003FE6
 _WDTCPS_WDTCPS7                   00003FE7
-_WDTCPS_WDTCPS8                   00003FE8
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 89
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 90
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_WDTCPS_WDTCPS8                   00003FE8
 _WDTCPS_WDTCPS9                   00003FE9
 _WDTCPS_WDTCPSA                   00003FEA
 _WDTCPS_WDTCPSB                   00003FEB
@@ -5242,13 +5259,13 @@ _WRITE_0179                       00000179
 _WRITE_0184                       00000184
 _WRITE_0192                       00000192
 _WRITE_019E                       0000019E
-_WRITE_01AC                       000001AC
-MPASM 5.77                        WS2813.ASM   7-24-2018  9:45:18         PAGE 90
+MPASM 5.77                        WS2813.ASM   7-24-2018  15:16:08         PAGE 91
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_WRITE_01AC                       000001AC
 _WRITE_01B7                       000001B7
 _WRITE_01C5                       000001C5
 _WRITE_01D0                       000001D0
@@ -5271,10 +5288,10 @@ _ZCD_OFF                          00003FFF
 _ZCD_ON                           00003F7F
 __16F1615                         00000001
 __DEBUG                           
-__MPLAB_DEBUGGER_SIMULATOR        1
+__MPLAB_DEBUGGER_PK3              1
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
-Messages :   103 reported,     0 suppressed
+Messages :   104 reported,     0 suppressed
 
 

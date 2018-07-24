@@ -71,7 +71,7 @@ ENDCHECK:
     #define AMPL_MASK	b'00000011'
     #define SLOPE_MASK	b'00001100'
     
-    #define NUM_SAMPLES	1
+    #define NUM_SAMPLES	200
     
     UDATA   0x20
 ;TEMP REGISTERS
@@ -135,7 +135,7 @@ EXTERN_INITIAL:
 
 ;ADC CONFIG
     BANKSEL ADCON1
-    MOVLF   ADCON1, b'10000000'		; right justified, Fosc/2, VDD ref
+    MOVLF   ADCON1, b'11000000'		; right justified, Fosc/2, VDD ref
     MOVLF   ADCON0, b'00001100'		; set output channel to AN3
     
 ;ADC INTERRUPT CONFIG
@@ -214,31 +214,31 @@ EXTERN_INTERRUPT_SERV:
 ;    INIT16  WDATA, 0x1FF	; 0x1FF		    |	yes
    
 ;TEST FOR NEW WAVE TROUGH
-    BANKSEL MIN_WAV
-    CLRSTAT				; clear Z and C  flags
-    CMP16   WDATA, MIN_WAV
-    BTFSS   STATUS, C			; test if WDATA < MIN_WAV, skip if isn't
-    GOTO    SET_TROUGH
-    GOTO    END_TEST1
-SET_TROUGH:
-    MOV16   WDATA, MIN_WAV		; set new MIN_WAV to new WDATA
-    BANKSEL SIGNAL
-    BSF	    SIGNAL, MIN_FOUND
-END_TEST1:
-    
-;TEST FOR NEW WAVE PEAK
-    BANKSEL MAX_WAV
-    CLRSTAT				; clear Z and C  flags
-    CMP16   MAX_WAV, WDATA
-    BTFSS   STATUS, C			; test if WDATA > MAX_WAV, skip if isn't
-    GOTO    SET_PEAK
-    GOTO    END_TEST2
-SET_PEAK:
-    MOV16   WDATA, MAX_WAV		; set new MAX_WAV to new WDATA
-    BANKSEL SIGNAL
-    BSF	    SIGNAL, MAX_FOUND
-END_TEST2:
-     
+;    BANKSEL MIN_WAV
+;    CLRSTAT				; clear Z and C  flags
+;    CMP16   WDATA, MIN_WAV
+;    BTFSS   STATUS, C			; test if WDATA < MIN_WAV, skip if isn't
+;    GOTO    SET_TROUGH
+;    GOTO    END_TEST1
+;SET_TROUGH:
+;    MOV16   WDATA, MIN_WAV		; set new MIN_WAV to new WDATA
+;    BANKSEL SIGNAL
+;    BSF	    SIGNAL, MIN_FOUND
+;END_TEST1:
+;    
+;;TEST FOR NEW WAVE PEAK
+;    BANKSEL MAX_WAV
+;    CLRSTAT				; clear Z and C  flags
+;    CMP16   MAX_WAV, WDATA
+;    BTFSS   STATUS, C			; test if WDATA > MAX_WAV, skip if isn't
+;    GOTO    SET_PEAK
+;    GOTO    END_TEST2
+;SET_PEAK:
+;    MOV16   WDATA, MAX_WAV		; set new MAX_WAV to new WDATA
+;    BANKSEL SIGNAL
+;    BSF	    SIGNAL, MAX_FOUND
+;END_TEST2:
+;     
 
 SLOPE_TEST:
 ;TEST FOR POSITIVE OR NEGATIVE SLOPES
@@ -300,10 +300,10 @@ END_TRGR_TEST:
      BSF    SIGNAL, SAMPL_DONE
     
 ;START NEXT ADC CONVERSION
-;    BANKSEL ADCON0
-;    BSF	    ADCON0, 0			; enable ADC
-;    ACQ_DELAY				; acquisition delay
-;    BSF	    ADCON0, ADGO		; start conversion
+    BANKSEL ADCON0
+    BSF	    ADCON0, 0			; enable ADC
+    ACQ_DELAY				; acquisition delay
+    BSF	    ADCON0, ADGO		; start conversion
     
     RETURN
     
@@ -316,10 +316,12 @@ END_TRGR_TEST:
 ;*******************************************************************************
 DO_RENDER:
 ;WAIT FOR SAMPLING TO COMPLETE
-;    BANKSEL SIGNAL
-;    BTFSS   SIGNAL, SAMPL_DONE
-;     GOTO   $-1
-;    MOVLF   SAMPLE_COUNT, NUM_SAMPLES 
+    BANKSEL SIGNAL 
+    BTFSS   SIGNAL, SAMPL_DONE
+    GOTO   $-1
+    BANKSEL INTCON		    
+    BCF	    INTCON, PEIE	    ; disable peripherial interrupts
+    MOVLF   SAMPLE_COUNT, NUM_SAMPLES 
 ;    
     
 ;SET COLOR
@@ -343,7 +345,9 @@ DO_RENDER:
 ;    BANKSEL SIGNAL
 ;    MOVLF   SIGNAL, b'00000100'		; clear MIN_FOUND and MAX_FOUND 
     
-    
+;CLEANUP
+    BANKSEL INTCON		    
+    BSF	    INTCON, PEIE	    ; enable peripherial interrupts
     
     RETURN
     
@@ -489,7 +493,7 @@ SET_BLUE:
     GOTO    B_12			; MIGHT be in the next range
 B_1:	; first range in piecewise
     BANKSEL WRGB
-    MOVLF   WRGB, 0x00
+    MOVLF   WRGB+2, 0x00
     RETURN
     
 B_12:   ; second range in piecewise
@@ -503,13 +507,13 @@ B_12:   ; second range in piecewise
     SUB16   TEMP16, B1			; (f - G1)
     RSF16   TEMP16, BS1			; (f - G1) / (1/m >> GS)
     BANKSEL WRGB
-    CPYFF   TEMP16, WRGB		; WRGB in GRB format
+    CPYFF   TEMP16, WRGB+2		; WRGB in GRB format
     RETURN
     
 B_23:	; third range in piecewise
     BCF	    STATUS, C
     BANKSEL WRGB			 
-    MOVLF   WRGB, 0xFF
+    MOVLF   WRGB+2, 0xFF
     RETURN
 
     
