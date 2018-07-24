@@ -4,7 +4,7 @@
 #define WS2813_HIDR	HIDC4	    ; 
 #define	NUM_LEDS	60	    ; number of LEDs in strip
 #define GPR_SIZE	0x50
-#define	TMR1_OFFSET	0xFFF0	    ; FPS = f_TMR1TICK / (0xFFFF - TMR1_OFFSET)
+#define	TMR1_OFFSET	0x0000	    ; FPS = f_TMR1TICK / (0xFFFF - TMR1_OFFSET)
 
 
 ; REGISTER BIT FIELDS

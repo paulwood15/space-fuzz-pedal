@@ -1,5 +1,5 @@
 MPLINK 5.08, LINKER
-Linker Map File - Created Sun Jul 22 14:19:08 2018
+Linker Map File - Created Tue Jul 24 10:05:12 2018
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
@@ -7,14 +7,14 @@ Linker Map File - Created Sun Jul 22 14:19:08 2018
                  RES_VECT       code   0x000000    program   0x000004
                    .cinit    romdata   0x000002    program   0x000004
            INTERRUPT_VECT       code   0x000004    program   0x000004
-                COLORIZOR       code   0x000006    program   0x000554
-                    WRITE       code   0x0002b0    program   0x000440
-                   RENDER       code   0x0004d0    program   0x0000e2
-                UTIL_PRGM       code   0x000541    program   0x000040
+                COLORIZOR       code   0x000006    program   0x0006c4
+                    WRITE       code   0x000368    program   0x0004ce
+                   RENDER       code   0x0005cf    program   0x0000ea
+                UTIL_PRGM       code   0x000644    program   0x000040
 .config_8007_BUILD/DEFAULT/DEBUG/_EXT/7394326       code   0x008007    program   0x000002
 .config_8008_BUILD/DEFAULT/DEBUG/_EXT/7394326       code   0x008008    program   0x000002
 .config_8009_BUILD/DEFAULT/DEBUG/_EXT/7394326       code   0x008009    program   0x000002
-                   .udata      udata   0x000020       data   0x000028
+                   .udata      udata   0x000020       data   0x00002c
                 REGISTERS      udata   0x000120       data   0x000010
                   BUFFERL      udata   0x0001a0       data   0x000050
                   BUFFERM      udata   0x000220       data   0x000050
@@ -26,146 +26,155 @@ Linker Map File - Created Sun Jul 22 14:19:08 2018
                               Program Memory Usage 
                                Start         End      
                            ---------   ---------      
-                            0x000000    0x000560      
+                            0x000000    0x000663      
                             0x008007    0x008009      
-            1380 out of 8200 program addresses used, program memory utilization is 16%
+            1639 out of 8200 program addresses used, program memory utilization is 19%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                      ACQ   0x000038    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      B_1   0x000269    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     B_12   0x00026e    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     B_23   0x0002aa    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-          CONTINUE_RENDER   0x000520    program     static ..\ws2813-firmware\WS2813.asm
-                DO_RENDER   0x000100    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                END_TEST1   0x000079    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                END_TEST2   0x000098    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-            END_TRGR_TEST   0x0000fd    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      B_1   0x000319    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     B_12   0x00031e    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     B_23   0x000362    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                DO_RENDER   0x00017b    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                END_TEST1   0x0000a5    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                END_TEST2   0x0000ca    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+            END_TRGR_TEST   0x00016b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
            EXTERN_INITIAL   0x000006    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-               EXTERN_INT   0x0004fe    program     static ..\ws2813-firmware\WS2813.asm
-    EXTERN_INTERRUPT_SERV   0x000055    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-               FIRST_TRGR   0x00009f    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      G_1   0x000118    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     G_12   0x00011d    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     G_23   0x000159    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     G_34   0x000172    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      G_4   0x0001b3    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-              HALT_RENDER   0x0004b7    program     static ..\ws2813-firmware\WS2813.asm
-                  INITIAL   0x0004d0    program     static ..\ws2813-firmware\WS2813.asm
-           INTERRUPT_SERV   0x0004fa    program     static ..\ws2813-firmware\WS2813.asm
-                 LSHIFT16   0x000551    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
-                   LSLOOP   0x000556    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
-               RENDER_INT   0x000501    program     static ..\ws2813-firmware\WS2813.asm
-              RENDER_LOOP   0x000530    program     static ..\ws2813-firmware\WS2813.asm
-                ROI_CHECK   0x00051c    program     static ..\ws2813-firmware\WS2813.asm
-                 RSHIFT16   0x000541    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
-                   RSLOOP   0x000546    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
-                      R_1   0x0001cc    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     R_12   0x0001d1    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     R_23   0x000212    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      R_3   0x00022b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-              SECOND_TRGR   0x0000c9    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                 SET_BLUE   0x000254    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                SET_GREEN   0x000103    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                 SET_PEAK   0x000090    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                  SET_RED   0x0001b7    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-               SET_TROUGH   0x000071    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                 SET_WRGB   0x000103    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                    START   0x000525    program     static ..\ws2813-firmware\WS2813.asm
-              WRITE_FRAME   0x0002b0    program     static ..\ws2813-firmware\WS2813.asm
-                WRITE_LED   0x0002b4    program     static ..\ws2813-firmware\WS2813.asm
-             WS2813_WRITE   0x0002bb    program     static ..\ws2813-firmware\WS2813.asm
-          _COLORIZOR_00AE   0x0000b4    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-          _COLORIZOR_00D8   0x0000de    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-             _RENDER_006D   0x00053d    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_000C   0x0002bc    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0016   0x0002c6    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0021   0x0002d1    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_002B   0x0002db    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0036   0x0002e6    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0040   0x0002f0    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_004B   0x0002fb    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0055   0x000305    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0060   0x000310    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_006A   0x00031a    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0075   0x000325    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_007F   0x00032f    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_008A   0x00033a    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0094   0x000344    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_009F   0x00034f    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00A9   0x000359    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00B5   0x000365    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00BF   0x00036f    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00CA   0x00037a    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00D4   0x000384    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00DF   0x00038f    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00E9   0x000399    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00F4   0x0003a4    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00FE   0x0003ae    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0109   0x0003b9    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0113   0x0003c3    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_011E   0x0003ce    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0128   0x0003d8    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0133   0x0003e3    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_013D   0x0003ed    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0148   0x0003f8    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0152   0x000402    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_015E   0x00040e    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0168   0x000418    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0173   0x000423    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_017D   0x00042d    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0188   0x000438    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0192   0x000442    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_019D   0x00044d    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01A7   0x000457    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01B2   0x000462    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01BC   0x00046c    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01C7   0x000477    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01D1   0x000481    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01DC   0x00048c    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01E6   0x000496    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01F1   0x0004a1    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01FB   0x0004ab    program     static ..\ws2813-firmware\WS2813.asm
-                 AMPL_WAV   0x000025       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       B1   0x000044       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       B2   0x000046       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      BS1   0x000043       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               EXTERN_INT   0x0005fc    program     static ..\ws2813-firmware\WS2813.asm
+    EXTERN_INTERRUPT_SERV   0x000076    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               FIRST_TRGR   0x0000f1    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      G_1   0x00019c    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     G_12   0x0001a1    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     G_23   0x0001e5    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     G_34   0x000202    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      G_4   0x00024b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                  INITIAL   0x0005cf    program     static ..\ws2813-firmware\WS2813.asm
+           INTERRUPT_SERV   0x0005f8    program     static ..\ws2813-firmware\WS2813.asm
+                 LSHIFT16   0x000654    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
+                   LSLOOP   0x000659    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
+         NORMAL_OPERATION   0x000612    program     static ..\ws2813-firmware\WS2813.asm
+               RENDER_INT   0x0005ff    program     static ..\ws2813-firmware\WS2813.asm
+              RENDER_LOOP   0x000631    program     static ..\ws2813-firmware\WS2813.asm
+                 RSHIFT16   0x000644    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
+                   RSLOOP   0x000649    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
+                      R_1   0x000268    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     R_12   0x00026d    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     R_23   0x0002b6    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      R_3   0x0002d3    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              SECOND_TRGR   0x000126    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                 SET_BLUE   0x000300    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                SET_GREEN   0x000183    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                 SET_PEAK   0x0000c0    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                  SET_RED   0x00024f    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               SET_TROUGH   0x00009b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                 SET_WRGB   0x000183    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               SLOPE_TEST   0x0000ca    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              SOLID_COLOR   0x000619    program     static ..\ws2813-firmware\WS2813.asm
+                    START   0x000624    program     static ..\ws2813-firmware\WS2813.asm
+      TRIGGER_WINDOW_TEST   0x0000ea    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                    WRITE   0x00061f    program     static ..\ws2813-firmware\WS2813.asm
+              WRITE_FRAME   0x000368    program     static ..\ws2813-firmware\WS2813.asm
+                WRITE_LED   0x00036c    program     static ..\ws2813-firmware\WS2813.asm
+             WS2813_WRITE   0x000373    program     static ..\ws2813-firmware\WS2813.asm
+                   _25ACQ   0x000072    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               _42CHECKUB   0x00010e    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              _42ENDCHECK   0x000122    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              _42LBNOTMET   0x00010c    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               _50CHECKUB   0x000143    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              _50ENDCHECK   0x000157    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              _50LBNOTMET   0x000141    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+             _RENDER_006F   0x00063e    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_000C   0x000374    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_001A   0x000382    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0025   0x00038d    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0033   0x00039b    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_003E   0x0003a6    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_004C   0x0003b4    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0057   0x0003bf    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0065   0x0003cd    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0070   0x0003d8    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_007E   0x0003e6    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0089   0x0003f1    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0097   0x0003ff    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00A2   0x00040a    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00B0   0x000418    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00BB   0x000423    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00C9   0x000431    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00D5   0x00043d    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00E3   0x00044b    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00EE   0x000456    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00FC   0x000464    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0107   0x00046f    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0115   0x00047d    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0120   0x000488    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_012E   0x000496    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0139   0x0004a1    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0147   0x0004af    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0152   0x0004ba    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0160   0x0004c8    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_016B   0x0004d3    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0179   0x0004e1    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0184   0x0004ec    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0192   0x0004fa    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_019E   0x000506    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01AC   0x000514    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01B7   0x00051f    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01C5   0x00052d    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01D0   0x000538    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01DE   0x000546    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01E9   0x000551    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01F7   0x00055f    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0202   0x00056a    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0210   0x000578    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_021B   0x000583    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0229   0x000591    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0234   0x00059c    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0242   0x0005aa    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_024D   0x0005b5    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_025B   0x0005c3    program     static ..\ws2813-firmware\WS2813.asm
+                AMPLITUDE   0x000029       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       B1   0x000048       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       B2   0x00004a       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      BS1   0x000047       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                 BSR_HCOPY   0x000128       data     static ..\ws2813-firmware\WS2813.asm
                   BUFFERH   0x0002a0       data     static ..\ws2813-firmware\WS2813.asm
                   BUFFERL   0x0001a0       data     static ..\ws2813-firmware\WS2813.asm
                   BUFFERM   0x000220       data     static ..\ws2813-firmware\WS2813.asm
-                  DELTA_T   0x00002b       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                  DELTA_T   0x00002f       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                FRAMECOUNT   0x000124       data     static ..\ws2813-firmware\WS2813.asm
               FSR0H_HCOPY   0x00012b       data     static ..\ws2813-firmware\WS2813.asm
               FSR0L_HCOPY   0x00012a       data     static ..\ws2813-firmware\WS2813.asm
               FSR1H_HCOPY   0x00012d       data     static ..\ws2813-firmware\WS2813.asm
               FSR1L_HCOPY   0x00012c       data     static ..\ws2813-firmware\WS2813.asm
-                       G1   0x00003b       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       G2   0x00003d       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       G3   0x00003f       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       G4   0x000041       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      GS1   0x000039       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      GS2   0x00003a       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       G1   0x00003f       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       G2   0x000041       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       G3   0x000043       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       G4   0x000045       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      GS1   0x00003d       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      GS2   0x00003e       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                  LEDCOUNT   0x000123       data     static ..\ws2813-firmware\WS2813.asm
-                  MAX_WAV   0x000029       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                  MIN_WAV   0x000027       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                  MAX_WAV   0x00002d       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                  MIN_WAV   0x00002b       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
              PCLATH_HCOPY   0x000129       data     static ..\ws2813-firmware\WS2813.asm
-                       R1   0x000033       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       R2   0x000035       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       R3   0x000037       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                    PDATA   0x000025       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       R1   0x000037       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       R2   0x000039       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       R3   0x00003b       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                RENDER_CON   0x00012e       data     extern ..\ws2813-firmware\WS2813.asm
             RENDER_STATUS   0x00012f       data     extern ..\ws2813-firmware\WS2813.asm
-                      RS1   0x000031       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      RS2   0x000032       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      RS1   0x000035       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      RS2   0x000036       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+             SAMPLE_COUNT   0x000028       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                  SHIFTNUM   0x0005a0       data     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
+                   SIGNAL   0x000027       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
              STATUS_HCOPY   0x000126       data     static ..\ws2813-firmware\WS2813.asm
                    TEMP16   0x000021       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                     TEMP8   0x000020       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     TGRH   0x00002d       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     TGRL   0x00002f       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     TGRH   0x000031       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     TGRL   0x000033       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                     WDATA   0x000023       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                WREG_HCOPY   0x000127       data     static ..\ws2813-firmware\WS2813.asm
                      WRGB   0x000120       data     extern ..\ws2813-firmware\WS2813.asm
@@ -177,122 +186,131 @@ Linker Map File - Created Sun Jul 22 14:19:08 2018
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
            EXTERN_INITIAL   0x000006    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      ACQ   0x000038    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-    EXTERN_INTERRUPT_SERV   0x000055    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-               SET_TROUGH   0x000071    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                END_TEST1   0x000079    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                 SET_PEAK   0x000090    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                END_TEST2   0x000098    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-               FIRST_TRGR   0x00009f    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-          _COLORIZOR_00AE   0x0000b4    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-              SECOND_TRGR   0x0000c9    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-          _COLORIZOR_00D8   0x0000de    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-            END_TRGR_TEST   0x0000fd    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                DO_RENDER   0x000100    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                 SET_WRGB   0x000103    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                SET_GREEN   0x000103    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      G_1   0x000118    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     G_12   0x00011d    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     G_23   0x000159    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     G_34   0x000172    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      G_4   0x0001b3    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                  SET_RED   0x0001b7    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      R_1   0x0001cc    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     R_12   0x0001d1    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     R_23   0x000212    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      R_3   0x00022b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                 SET_BLUE   0x000254    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      B_1   0x000269    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     B_12   0x00026e    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     B_23   0x0002aa    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-              WRITE_FRAME   0x0002b0    program     static ..\ws2813-firmware\WS2813.asm
-                WRITE_LED   0x0002b4    program     static ..\ws2813-firmware\WS2813.asm
-             WS2813_WRITE   0x0002bb    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_000C   0x0002bc    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0016   0x0002c6    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0021   0x0002d1    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_002B   0x0002db    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0036   0x0002e6    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0040   0x0002f0    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_004B   0x0002fb    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0055   0x000305    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0060   0x000310    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_006A   0x00031a    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0075   0x000325    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_007F   0x00032f    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_008A   0x00033a    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0094   0x000344    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_009F   0x00034f    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00A9   0x000359    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00B5   0x000365    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00BF   0x00036f    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00CA   0x00037a    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00D4   0x000384    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00DF   0x00038f    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00E9   0x000399    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00F4   0x0003a4    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_00FE   0x0003ae    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0109   0x0003b9    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0113   0x0003c3    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_011E   0x0003ce    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0128   0x0003d8    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0133   0x0003e3    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_013D   0x0003ed    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0148   0x0003f8    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0152   0x000402    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_015E   0x00040e    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0168   0x000418    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0173   0x000423    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_017D   0x00042d    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0188   0x000438    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_0192   0x000442    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_019D   0x00044d    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01A7   0x000457    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01B2   0x000462    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01BC   0x00046c    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01C7   0x000477    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01D1   0x000481    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01DC   0x00048c    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01E6   0x000496    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01F1   0x0004a1    program     static ..\ws2813-firmware\WS2813.asm
-              _WRITE_01FB   0x0004ab    program     static ..\ws2813-firmware\WS2813.asm
-              HALT_RENDER   0x0004b7    program     static ..\ws2813-firmware\WS2813.asm
-                  INITIAL   0x0004d0    program     static ..\ws2813-firmware\WS2813.asm
-           INTERRUPT_SERV   0x0004fa    program     static ..\ws2813-firmware\WS2813.asm
-               EXTERN_INT   0x0004fe    program     static ..\ws2813-firmware\WS2813.asm
-               RENDER_INT   0x000501    program     static ..\ws2813-firmware\WS2813.asm
-                ROI_CHECK   0x00051c    program     static ..\ws2813-firmware\WS2813.asm
-          CONTINUE_RENDER   0x000520    program     static ..\ws2813-firmware\WS2813.asm
-                    START   0x000525    program     static ..\ws2813-firmware\WS2813.asm
-              RENDER_LOOP   0x000530    program     static ..\ws2813-firmware\WS2813.asm
-             _RENDER_006D   0x00053d    program     static ..\ws2813-firmware\WS2813.asm
-                 RSHIFT16   0x000541    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
-                   RSLOOP   0x000546    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
-                 LSHIFT16   0x000551    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
-                   LSLOOP   0x000556    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
+                   _25ACQ   0x000072    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+    EXTERN_INTERRUPT_SERV   0x000076    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               SET_TROUGH   0x00009b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                END_TEST1   0x0000a5    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                 SET_PEAK   0x0000c0    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               SLOPE_TEST   0x0000ca    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                END_TEST2   0x0000ca    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+      TRIGGER_WINDOW_TEST   0x0000ea    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               FIRST_TRGR   0x0000f1    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              _42LBNOTMET   0x00010c    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               _42CHECKUB   0x00010e    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              _42ENDCHECK   0x000122    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              SECOND_TRGR   0x000126    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              _50LBNOTMET   0x000141    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+               _50CHECKUB   0x000143    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              _50ENDCHECK   0x000157    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+            END_TRGR_TEST   0x00016b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                DO_RENDER   0x00017b    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                SET_GREEN   0x000183    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                 SET_WRGB   0x000183    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      G_1   0x00019c    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     G_12   0x0001a1    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     G_23   0x0001e5    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     G_34   0x000202    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      G_4   0x00024b    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                  SET_RED   0x00024f    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      R_1   0x000268    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     R_12   0x00026d    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     R_23   0x0002b6    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      R_3   0x0002d3    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                 SET_BLUE   0x000300    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      B_1   0x000319    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     B_12   0x00031e    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     B_23   0x000362    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+              WRITE_FRAME   0x000368    program     static ..\ws2813-firmware\WS2813.asm
+                WRITE_LED   0x00036c    program     static ..\ws2813-firmware\WS2813.asm
+             WS2813_WRITE   0x000373    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_000C   0x000374    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_001A   0x000382    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0025   0x00038d    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0033   0x00039b    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_003E   0x0003a6    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_004C   0x0003b4    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0057   0x0003bf    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0065   0x0003cd    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0070   0x0003d8    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_007E   0x0003e6    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0089   0x0003f1    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0097   0x0003ff    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00A2   0x00040a    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00B0   0x000418    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00BB   0x000423    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00C9   0x000431    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00D5   0x00043d    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00E3   0x00044b    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00EE   0x000456    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_00FC   0x000464    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0107   0x00046f    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0115   0x00047d    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0120   0x000488    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_012E   0x000496    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0139   0x0004a1    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0147   0x0004af    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0152   0x0004ba    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0160   0x0004c8    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_016B   0x0004d3    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0179   0x0004e1    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0184   0x0004ec    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0192   0x0004fa    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_019E   0x000506    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01AC   0x000514    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01B7   0x00051f    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01C5   0x00052d    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01D0   0x000538    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01DE   0x000546    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01E9   0x000551    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_01F7   0x00055f    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0202   0x00056a    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0210   0x000578    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_021B   0x000583    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0229   0x000591    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0234   0x00059c    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_0242   0x0005aa    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_024D   0x0005b5    program     static ..\ws2813-firmware\WS2813.asm
+              _WRITE_025B   0x0005c3    program     static ..\ws2813-firmware\WS2813.asm
+                  INITIAL   0x0005cf    program     static ..\ws2813-firmware\WS2813.asm
+           INTERRUPT_SERV   0x0005f8    program     static ..\ws2813-firmware\WS2813.asm
+               EXTERN_INT   0x0005fc    program     static ..\ws2813-firmware\WS2813.asm
+               RENDER_INT   0x0005ff    program     static ..\ws2813-firmware\WS2813.asm
+         NORMAL_OPERATION   0x000612    program     static ..\ws2813-firmware\WS2813.asm
+              SOLID_COLOR   0x000619    program     static ..\ws2813-firmware\WS2813.asm
+                    WRITE   0x00061f    program     static ..\ws2813-firmware\WS2813.asm
+                    START   0x000624    program     static ..\ws2813-firmware\WS2813.asm
+              RENDER_LOOP   0x000631    program     static ..\ws2813-firmware\WS2813.asm
+             _RENDER_006F   0x00063e    program     static ..\ws2813-firmware\WS2813.asm
+                 RSHIFT16   0x000644    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
+                   RSLOOP   0x000649    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
+                 LSHIFT16   0x000654    program     extern C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
+                   LSLOOP   0x000659    program     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\UtilRoutines.asm
                     TEMP8   0x000020       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                    TEMP16   0x000021       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                     WDATA   0x000023       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                 AMPL_WAV   0x000025       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                  MIN_WAV   0x000027       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                  MAX_WAV   0x000029       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                  DELTA_T   0x00002b       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     TGRH   0x00002d       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                     TGRL   0x00002f       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      RS1   0x000031       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      RS2   0x000032       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       R1   0x000033       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       R2   0x000035       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       R3   0x000037       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      GS1   0x000039       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      GS2   0x00003a       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       G1   0x00003b       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       G2   0x00003d       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       G3   0x00003f       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       G4   0x000041       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                      BS1   0x000043       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       B1   0x000044       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
-                       B2   0x000046       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                    PDATA   0x000025       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                   SIGNAL   0x000027       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+             SAMPLE_COUNT   0x000028       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                AMPLITUDE   0x000029       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                  MIN_WAV   0x00002b       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                  MAX_WAV   0x00002d       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                  DELTA_T   0x00002f       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     TGRH   0x000031       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                     TGRL   0x000033       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      RS1   0x000035       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      RS2   0x000036       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       R1   0x000037       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       R2   0x000039       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       R3   0x00003b       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      GS1   0x00003d       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      GS2   0x00003e       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       G1   0x00003f       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       G2   0x000041       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       G3   0x000043       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       G4   0x000045       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                      BS1   0x000047       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       B1   0x000048       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
+                       B2   0x00004a       data     static C:\Users\Paul Wood\Documents\Git\space-fuzz-pedal\colorize_analog.asm
                      WRGB   0x000120       data     extern ..\ws2813-firmware\WS2813.asm
                  LEDCOUNT   0x000123       data     static ..\ws2813-firmware\WS2813.asm
                FRAMECOUNT   0x000124       data     static ..\ws2813-firmware\WS2813.asm

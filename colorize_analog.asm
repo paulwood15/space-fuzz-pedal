@@ -24,11 +24,13 @@
     GLOBAL  EXTERN_INITIAL
     
     EXTERN  WRGB
+    EXTERN  RENDER_STATUS
   
 ;*******************************************************************************
 ;			      MACRO DEFINITIONS
 ;*******************************************************************************
 ACQ_DELAY   MACRO
+   LOCAL    ACQ
    MOVLW    0x0E
 ACQ:
     DECFSZ  WREG, W
@@ -36,11 +38,20 @@ ACQ:
    ENDM
  
 WITHIN_WINDOW	MACRO	D	    ; sets C flag of STATUS register
+	LOCAL	LBNOTMET
+	LOCAL	CHECKUB
+	LOCAL	ENDCHECK
 	CLRSTAT			    ; clear Z and C flags
 	CMP16	TGRL, D		    ; test if above lower trigger - C will be clear
-	BTFSC	STATUS, C	    ; exits macro if C set = not above TGRL
-	GOTO	$+6
+	BTFSC	STATUS, C
+	 GOTO	LBNOTMET
+	GOTO	CHECKUB
+LBNOTMET:
+	BCF	STATUS, C
+	GOTO	ENDCHECK
+CHECKUB:
 	CMP16	TGRH, D		    ; will set c if below TGRH
+ENDCHECK:
 	ENDM
    
 ;*******************************************************************************
@@ -56,8 +67,11 @@ WITHIN_WINDOW	MACRO	D	    ; sets C flag of STATUS register
     #define POS_SLOPE	2
     #define NEG_SLOPE	3
     #define ALLOW_TRGR2	4  
+    #define SAMPL_DONE	5
     #define AMPL_MASK	b'00000011'
     #define SLOPE_MASK	b'00001100'
+    
+    #define NUM_SAMPLES	1
     
     UDATA   0x20
 ;TEMP REGISTERS
@@ -70,7 +84,11 @@ WDATA	RES 2		    ; copied data from ADC read
 PDATA	RES 2		    ; last read 
 SIGNAL	RES 1		    ; bit 0: MIN_WAV found
 			    ; bit 1: MAX_WAVE found
+			    ; bit 2: POS_SLOPE
+			    ; bit 3: NEG_SLOPE
 			    ; bit 4: allow trigger 2
+			    ; bit 5: SAMPLING_DONE
+SAMPLE_COUNT	RES 1
     
 ;AMPLITUDE REGISTERS
 AMPLITUDE   RES 2	    ; calculated amplitude 
@@ -134,25 +152,40 @@ EXTERN_INITIAL:
     ADDI16  TGRH, TRIGGER_OFF
     INIT16  TGRL, 0x1FF
     SUBI16  TGRL, TRIGGER_OFF
+    BANKSEL SAMPLE_COUNT
+    MOVLF   SAMPLE_COUNT, NUM_SAMPLES
     
+  
+; PIECEWISE PARAMETERS - SEE EXCEL
+    ;RED
+    BANKSEL RS1
+    MOVLF   RS1, 5
+    MOVLF   RS2, 6
+    INIT16  R1, 8192
+    INIT16  R2, 16384
+    INIT16  R3, 57344
     
-;START ADC CONVERSION
+    ;GREEN
+    BANKSEL GS1
+    MOVLF   GS1, 5
+    MOVLF   GS2, 5
+    INIT16  G1, 8192
+    INIT16  G2, 16384
+    INIT16  G3, 24576
+    INIT16  G4, 32768
+    
+    ;BLUE 
+    BANKSEL BS1
+    MOVLF   BS1, 5
+    INIT16  B1, 24576
+    INIT16  B2, 32768
+     
+    
+    ;START ADC CONVERSION
     BANKSEL ADCON0
     BSF	    ADCON0, 0			; enable ADC
     ACQ_DELAY				; acquisition delay
     BSF	    ADCON0, ADGO		; start conversion
-    
-  
-;TODO: set colorize parameters
-    BANKSEL WDATA
-    INIT16  WDATA, D'55639'
-    BANKSEL RS1
-    MOVLF   RS1, 4
-    MOVLF   RS2, 5
-    INIT16  R1, D'12288'
-    INIT16  R2, D'16384'
-    INIT16  R3, D'49152'
-    CALL    SET_WRGB
     
     RETURN
     
@@ -169,7 +202,7 @@ EXTERN_INTERRUPT_SERV:
     ; !!!! WITHIN_TRIGGER unit tests !!!!
 ;    BANKSEL T3CON
 ;    BSF	    T3CON, TMR3ON
-    BANKSEL WDATA
+;    BANKSEL WDATA
 ;    INIT16  WDATA, 0x202
 ;    INIT16  WDATA, 0x1FC	; 0x1FF +- 3	    |	yes
 ;    INIT16  WDATA, 0x22E    
@@ -209,12 +242,14 @@ END_TEST2:
 
 SLOPE_TEST:
 ;TEST FOR POSITIVE OR NEGATIVE SLOPES
+    BCF	    STATUS, C
     CMP16   WDATA, PDATA		; compare WDATA and PDATA to see the rate of change 
     BTFSS   STATUS, C			; 
      BSF    SIGNAL, NEG_SLOPE
     BTFSC   SIGNAL, C
      BSF    SIGNAL, POS_SLOPE
     MOVF    SIGNAL, W
+    BCF	    STATUS, Z
     ANDLW   SLOPE_MASK
     SUBLW   SLOPE_MASK
     BTFSS   STATUS, Z
@@ -248,14 +283,27 @@ SECOND_TRGR:
     CPYFF   TMR3L, DELTA_T
     CLRF    TMR3L			; clear timer3
     CLRF    TMR3H   
+    BANKSEL SIGNAL
+    BCF	    SIGNAL, POS_SLOPE		; clear SIGNAL rate of change status flags
+    BCF	    SIGNAL, NEG_SLOPE
+    BCF	    SIGNAL, ALLOW_TRGR2
 END_TRGR_TEST:
     
 ;CLEANUP
     BANKSEL PIR1
     BCF	    PIR1, ADIF			; clear ADC interrupt flag
     MOV16   WDATA, PDATA		; copy data to past data register 
+    BCF	    STATUS, Z
+    BANKSEL SAMPLE_COUNT
+    DECF    SAMPLE_COUNT, F
+    BTFSC   STATUS, Z
+     BSF    SIGNAL, SAMPL_DONE
     
-    ; TODO: ADC cleanup and start next reading.
+;START NEXT ADC CONVERSION
+;    BANKSEL ADCON0
+;    BSF	    ADCON0, 0			; enable ADC
+;    ACQ_DELAY				; acquisition delay
+;    BSF	    ADCON0, ADGO		; start conversion
     
     RETURN
     
@@ -267,22 +315,33 @@ END_TRGR_TEST:
 ;				 DO_RENDER
 ;*******************************************************************************
 DO_RENDER:
+;WAIT FOR SAMPLING TO COMPLETE
+;    BANKSEL SIGNAL
+;    BTFSS   SIGNAL, SAMPL_DONE
+;     GOTO   $-1
+;    MOVLF   SAMPLE_COUNT, NUM_SAMPLES 
+;    
+    
+;SET COLOR
+    BANKSEL DELTA_T
+    INIT16  DELTA_T, 12288
+    
     PAGESEL SET_WRGB
     CALL    SET_WRGB
     
-    CALC_AMPLITUDE:
-;TEST WHETHER A MAX AND MIN HAS BEEN FOUND 
-    BCF	    STATUS, Z			; clear Z flag of STATUS register
-    MOVF    SIGNAL, W			; move SIGNAL status register to WREG
-    ANDLW   AMPL_MASK			; mask SIGNAL for data about the wave's amplitude
-    SUBLW   AMPL_MASK			; if a max and min has been found, both bits will be set and will be 
-    BTFSS   STATUS, Z			; equal to the mask and will cause the Z flag to be set upon subtraction
-     GOTO    TRIGGER_WINDOW_TEST	; min and max weren't found
-    MOV16   MAX_WAV, AMPLITUDE
-    SUB16   AMPLITUDE, MIN_WAV		; MAX_WAV - MIN_WAV
-    RSF16   AMPLITUDE, 1		; divide by 2
-    BANKSEL SIGNAL
-    MOVLF   SIGNAL, b'00000100'		; clear MIN_FOUND and MAX_FOUND 
+;    CALC_AMPLITUDE:
+;;TEST WHETHER A MAX AND MIN HAS BEEN FOUND 
+;    BCF	    STATUS, Z			; clear Z flag of STATUS register
+;    MOVF    SIGNAL, W			; move SIGNAL status register to WREG
+;    ANDLW   AMPL_MASK			; mask SIGNAL for data about the wave's amplitude
+;    SUBLW   AMPL_MASK			; if a max and min has been found, both bits will be set and will be 
+;    BTFSS   STATUS, Z			; equal to the mask and will cause the Z flag to be set upon subtraction
+;     GOTO    TRIGGER_WINDOW_TEST	; min and max weren't found
+;    MOV16   MAX_WAV, AMPLITUDE
+;    SUB16   AMPLITUDE, MIN_WAV		; MAX_WAV - MIN_WAV
+;    RSF16   AMPLITUDE, 1		; divide by 2
+;    BANKSEL SIGNAL
+;    MOVLF   SIGNAL, b'00000100'		; clear MIN_FOUND and MAX_FOUND 
     
     
     
@@ -302,8 +361,8 @@ SET_WRGB:
 ;
 SET_GREEN:
     BCF	    STATUS, C
-    BANKSEL WDATA
-    CMP16   WDATA, G1			; check for first range in piecewise
+    BANKSEL DELTA_T
+    CMP16   DELTA_T, G1			; check for first range in piecewise
     BTFSS   STATUS, C			
     GOTO    G_1				; within first range
     GOTO    G_12			; MIGHT be in the next range
@@ -314,13 +373,13 @@ G_1:	; first range in piecewise
     
 G_12:   ; second range in piecewise
     BCF	    STATUS, C
-    BANKSEL WDATA
-    CMP16   WDATA, G2
+    BANKSEL DELTA_T
+    CMP16   DELTA_T, G2
     BTFSC   STATUS, C	
      GOTO    G_23			; might be in the next range 
     
-    MOV16   WDATA, TEMP16		; in this range
-    SUB16   TEMP16, G3			; (f - G1)
+    MOV16   DELTA_T, TEMP16		; in this range
+    SUB16   TEMP16, G1			; (f - G1)
     RSF16   TEMP16, GS1			; (f - G1) / (1/m >> GS)
     BANKSEL WRGB
     CPYFF   TEMP16, WRGB		; WRGB in GRB format
@@ -328,8 +387,8 @@ G_12:   ; second range in piecewise
     
 G_23:	; third range in piecewise
     BCF	    STATUS, C
-    BANKSEL WDATA
-    CMP16   WDATA, G3
+    BANKSEL DELTA_T
+    CMP16   DELTA_T, G3
     BTFSC   STATUS, C			; might be in next range 
      GOTO    G_34
     
@@ -339,12 +398,12 @@ G_23:	; third range in piecewise
     
 G_34:	; fourth range in piecewise
     BCF	    STATUS, C
-    BANKSEL WDATA
-    CMP16   WDATA, G2
+    BANKSEL DELTA_T
+    CMP16   DELTA_T, G2
     BTFSC   STATUS, C	
      GOTO    G_4			; it is in the fifth range
     
-    MOV16   WDATA, TEMP16		; in this range
+    MOV16   DELTA_T, TEMP16		; in this range
     SUB16   TEMP16, G1			; (f - G1)
     RSF16   TEMP16, GS2			; (f - G1) / (1/m >> GS)
     MOVLF   TEMP8, 0xFF
@@ -368,8 +427,8 @@ G_4:	; fifth range in piecewise
 ;    
 SET_RED:
     BCF	    STATUS, C
-    BANKSEL WDATA
-    CMP16   WDATA, R1
+    BANKSEL DELTA_T
+    CMP16   DELTA_T, R1
     BTFSS   STATUS, C			; test if WDATA <= R1
     GOTO    R_1
     GOTO    R_12
@@ -380,12 +439,12 @@ R_1:	; WDATA <= R1
     
 R_12:   ; R1 < WDATA <= R2 
     BCF	    STATUS, C
-    BANKSEL WDATA
-    CMP16   WDATA, R2
+    BANKSEL DELTA_T
+    CMP16   DELTA_T, R2
     BTFSC   STATUS, C	
      GOTO    R_23			; go to R_23 if WDATA not within range of R_12
     
-    MOV16   WDATA, TEMP16		; (f - R1)
+    MOV16   DELTA_T, TEMP16		; (f - R1)
     SUB16   TEMP16, R1
     RSF16   TEMP16, RS1			; (f - R1) / (1/m >> RS)
     MOVLF   TEMP8, 0xFF
@@ -397,8 +456,8 @@ R_12:   ; R1 < WDATA <= R2
     
 R_23:	; R2 < WDATA <= R3 
     BCF	    STATUS, C
-    BANKSEL WDATA
-    CMP16   WDATA, R3
+    BANKSEL DELTA_T
+    CMP16   DELTA_T, R3
     BTFSC   STATUS, C	
      GOTO    R_3
     
@@ -408,8 +467,8 @@ R_23:	; R2 < WDATA <= R3
     
 R_3:	; WDATA > R3
     BCF	    STATUS, C
-    BANKSEL WDATA
-    MOV16   WDATA, TEMP16		; (f - R1)
+    BANKSEL DELTA_T
+    MOV16   DELTA_T, TEMP16		; (f - R1)
     SUB16   TEMP16, R3
     RSF16   TEMP16, RS2			; (f - R1) / (1/m >> RS)
     BANKSEL WRGB
@@ -423,8 +482,8 @@ R_3:	; WDATA > R3
 ;   | 0xFF		, f > B2
 SET_BLUE:    
     BCF	    STATUS, C
-    BANKSEL WDATA
-    CMP16   WDATA, B1			; check for first range in piecewise
+    BANKSEL DELTA_T
+    CMP16   DELTA_T, B1			; check for first range in piecewise
     BTFSS   STATUS, C			
     GOTO    B_1				; within first range
     GOTO    B_12			; MIGHT be in the next range
@@ -435,12 +494,12 @@ B_1:	; first range in piecewise
     
 B_12:   ; second range in piecewise
     BCF	    STATUS, C
-    BANKSEL WDATA
-    CMP16   WDATA, B2
+    BANKSEL DELTA_T
+    CMP16   DELTA_T, B2
     BTFSC   STATUS, C	
      GOTO    B_23			; might be in the next range 
     
-    MOV16   WDATA, TEMP16		; in this range
+    MOV16   DELTA_T, TEMP16		; in this range
     SUB16   TEMP16, B1			; (f - G1)
     RSF16   TEMP16, BS1			; (f - G1) / (1/m >> GS)
     BANKSEL WRGB
