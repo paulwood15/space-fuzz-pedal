@@ -1,4 +1,4 @@
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE  1
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -36,7 +36,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00020 ;                                    ROUTINES    
                       00021 ;************************************************************************************
 0000                  00022 RSHIFT16:
-  0000                00023     LOCAL   LOOP
+  0000                00023     LOCAL   RSLOOP
 0000   1003           00024     BCF     STATUS, C
 0001   1103           00025     BCF     STATUS, Z
 0002   0020           00026     BANKSEL WREG
@@ -57,7 +57,7 @@ Message[305]: Using default destination of 1 (file).
 Message[305]: Using default destination of 1 (file).
 000D   0B89           00039     DECFSZ  WREG
 000E   2???           00040      GOTO   RSLOOP
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE  2
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -97,7 +97,7 @@ Message[305]: Using default destination of 1 (file).
                       00069     
                       00070     
                       00071     END
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE  3
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE  3
 
 
 SYMBOL TABLE
@@ -156,7 +156,7 @@ ADD0                              00000000
 ADD1                              00000001
 ADD2                              00000002
 ADD3                              00000003
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE  4
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE  4
 
 
 SYMBOL TABLE
@@ -215,7 +215,7 @@ AT1CC1IF                          00000000
 AT1CC1L                           0000088F
 AT1CC1MODE                        00000000
 AT1CC1POL                         00000004
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE  5
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE  5
 
 
 SYMBOL TABLE
@@ -274,7 +274,7 @@ AT1CP3S1                          00000001
 AT1CP3S2                          00000002
 AT1CS                             00000000
 AT1CS0                            00000000
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE  6
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE  6
 
 
 SYMBOL TABLE
@@ -333,7 +333,7 @@ AT1MISSL                          0000080E
 AT1MODE                           00000000
 AT1MPP                            00000002
 AT1PER                            00000810
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE  7
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE  7
 
 
 SYMBOL TABLE
@@ -392,7 +392,7 @@ AT1RES7                           00000007
 AT1RES8                           00000000
 AT1RES9                           00000001
 AT1RESH                           0000080D
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE  8
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE  8
 
 
 SYMBOL TABLE
@@ -451,7 +451,7 @@ BAUDCON                           0000019F
 BAUDCON1                          0000019F
 BAUDCTL                           0000019F
 BAUDCTL1                          0000019F
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE  9
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE  9
 
 
 SYMBOL TABLE
@@ -510,7 +510,7 @@ C2INTP                            00000007
 C2NCH0                            00000000
 C2NCH1                            00000001
 C2NCH2                            00000002
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 10
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 10
 
 
 SYMBOL TABLE
@@ -569,7 +569,7 @@ CCP1CTS0                          00000000
 CCP1CTS1                          00000001
 CCP1CTS2                          00000002
 CCP1EN                            00000007
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 11
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 11
 
 
 SYMBOL TABLE
@@ -628,7 +628,7 @@ CHS0                              00000002
 CHS1                              00000003
 CHS2                              00000004
 CHS3                              00000005
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 12
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 12
 
 
 SYMBOL TABLE
@@ -687,7 +687,7 @@ CLC3SEL3                          00000F29
 CLC4CON                           00000F2E
 CLC4GLS0                          00000F34
 CLC4GLS1                          00000F35
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 13
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 13
 
 
 SYMBOL TABLE
@@ -746,7 +746,7 @@ CPRUP                             00000007
 CPWUP                             00000006
 CRCACC                            00000793
 CRCACC0                           00000000
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 14
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 14
 
 
 SYMBOL TABLE
@@ -805,7 +805,7 @@ CRCPLEN1                          00000001
 CRCPLEN2                          00000002
 CRCPLEN3                          00000003
 CRCSHIFT                          00000795
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 15
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 15
 
 
 SYMBOL TABLE
@@ -864,7 +864,7 @@ CTS1                              00000001
 CTS2                              00000002
 CWG1AS0                           00000693
 CWG1AS1                           00000694
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 16
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 16
 
 
 SYMBOL TABLE
@@ -923,7 +923,7 @@ CWG1STRC                          00000002
 CWG1STRD                          00000003
 CWG1TMR2AS                        00000004
 CWG1TMR4AS                        00000005
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 17
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 17
 
 
 SYMBOL TABLE
@@ -982,7 +982,7 @@ DAC1R1                            00000001
 DAC1R2                            00000002
 DAC1R3                            00000003
 DAC1R4                            00000004
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 18
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 18
 
 
 SYMBOL TABLE
@@ -1041,7 +1041,7 @@ EN                                00000007
 ERR0                              00000000
 ERR1                              00000001
 ERR10                             00000002
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 19
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 19
 
 
 SYMBOL TABLE
@@ -1100,7 +1100,7 @@ G2POL                             00000001
 G3POL                             00000002
 G4D1N                             00000000
 G4D1T                             00000001
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 20
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 20
 
 
 SYMBOL TABLE
@@ -1159,7 +1159,7 @@ IN9                               00000001
 INAS                              00000000
 INDF0                             00000000
 INDF1                             00000001
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 21
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 21
 
 
 SYMBOL TABLE
@@ -1218,7 +1218,7 @@ IOCCF                             00000399
 IOCCF0                            00000000
 IOCCF1                            00000001
 IOCCF2                            00000002
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 22
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 22
 
 
 SYMBOL TABLE
@@ -1277,7 +1277,7 @@ K20                               00000000
 K21                               00000001
 K210                              00000002
 K211                              00000003
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 23
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 23
 
 
 SYMBOL TABLE
@@ -1336,7 +1336,7 @@ LATC                              0000010E
 LATC0                             00000000
 LATC1                             00000001
 LATC2                             00000002
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 24
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 24
 
 
 SYMBOL TABLE
@@ -1395,7 +1395,7 @@ LC1G3D2T                          00000003
 LC1G3D3N                          00000004
 LC1G3D3T                          00000005
 LC1G3D4N                          00000006
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 25
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 25
 
 
 SYMBOL TABLE
@@ -1454,7 +1454,7 @@ LC2G1D4N                          00000006
 LC2G1D4T                          00000007
 LC2G1POL                          00000000
 LC2G2D1N                          00000000
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 26
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 26
 
 
 SYMBOL TABLE
@@ -1513,7 +1513,7 @@ LC3D3S4                           00000004
 LC3D3S5                           00000005
 LC3D4S0                           00000000
 LC3D4S1                           00000001
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 27
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 27
 
 
 SYMBOL TABLE
@@ -1572,7 +1572,7 @@ LC4D1S1                           00000001
 LC4D1S2                           00000002
 LC4D1S3                           00000003
 LC4D1S4                           00000004
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 28
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 28
 
 
 SYMBOL TABLE
@@ -1631,7 +1631,7 @@ LC4G4D2N                          00000002
 LC4G4D2T                          00000003
 LC4G4D3N                          00000004
 LC4G4D3T                          00000005
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 29
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 29
 
 
 SYMBOL TABLE
@@ -1690,7 +1690,7 @@ MODE4                             00000004
 MPP                               00000002
 MSK0                              00000000
 MSK1                              00000001
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 30
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 30
 
 
 SYMBOL TABLE
@@ -1749,7 +1749,7 @@ OUT18                             00000002
 OUT19                             00000003
 OUT2                              00000002
 OUT20                             00000004
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 31
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 31
 
 
 SYMBOL TABLE
@@ -1808,7 +1808,7 @@ PER15                             00000007
 PER2                              00000002
 PER3                              00000003
 PER4                              00000004
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 32
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 32
 
 
 SYMBOL TABLE
@@ -1867,7 +1867,7 @@ PID1ACC21                         00000005
 PID1ACC22                         00000006
 PID1ACC23                         00000007
 PID1ACC24                         00000000
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 33
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 33
 
 
 SYMBOL TABLE
@@ -1926,7 +1926,7 @@ PID1K10                           00000000
 PID1K11                           00000001
 PID1K110                          00000002
 PID1K111                          00000003
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 34
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 34
 
 
 SYMBOL TABLE
@@ -1985,7 +1985,7 @@ PID1K39                           00000001
 PID1K3H                           00000595
 PID1K3L                           00000594
 PID1MODE0                         00000000
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 35
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 35
 
 
 SYMBOL TABLE
@@ -2044,7 +2044,7 @@ PID1SET12                         00000004
 PID1SET13                         00000005
 PID1SET14                         00000006
 PID1SET15                         00000007
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 36
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 36
 
 
 SYMBOL TABLE
@@ -2103,7 +2103,7 @@ PID1Z2H                           0000060D
 PID1Z2L                           0000060C
 PID1Z2U                           0000060E
 PIE1                              00000090
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 37
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 37
 
 
 SYMBOL TABLE
@@ -2162,7 +2162,7 @@ PSCNT1                            00000001
 PSCNT10                           00000002
 PSCNT11                           00000003
 PSCNT12                           00000004
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 38
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 38
 
 
 SYMBOL TABLE
@@ -2221,7 +2221,7 @@ PWMPW3                            00000001
 PWMPW4                            00000002
 PWMPW5                            00000003
 PWMPW6                            00000004
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 39
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 39
 
 
 SYMBOL TABLE
@@ -2280,7 +2280,7 @@ RC1PPS1                           00000001
 RC1PPS2                           00000002
 RC1PPS3                           00000003
 RC1PPS4                           00000004
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 40
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 40
 
 
 SYMBOL TABLE
@@ -2339,7 +2339,7 @@ RES8                              00000000
 RES9                              00000001
 RSEL0                             00000000
 RSEL1                             00000001
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 41
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 41
 
 
 SYMBOL TABLE
@@ -2349,7 +2349,6 @@ RSEL2                             00000002
 RSEL3                             00000003
 RSEN                              00000001
 RSHIFT16                          00000000
-RSLOOP                            00000005
 RST                               00000005
 RX9                               00000006
 RX9D                              00000000
@@ -2398,13 +2397,13 @@ SCANLADR11                        00000003
 SCANLADR12                        00000004
 SCANLADR13                        00000005
 SCANLADR14                        00000006
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 42
+SCANLADR15                        00000007
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 42
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SCANLADR15                        00000007
 SCANLADR2                         00000002
 SCANLADR3                         00000003
 SCANLADR4                         00000004
@@ -2457,13 +2456,13 @@ SHIFT2                            00000002
 SHIFT3                            00000003
 SHIFT4                            00000004
 SHIFT5                            00000005
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 43
+SHIFT6                            00000006
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 43
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SHIFT6                            00000006
 SHIFT7                            00000007
 SHIFT8                            00000000
 SHIFT9                            00000001
@@ -2516,13 +2515,13 @@ SMT1CPR9                          00000001
 SMT1CPRH                          00000D90
 SMT1CPRL                          00000D8F
 SMT1CPRU                          00000D91
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 44
+SMT1CPRUP                         00000007
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 44
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SMT1CPRUP                         00000007
 SMT1CPW                           00000D92
 SMT1CPW0                          00000000
 SMT1CPW1                          00000001
@@ -2575,13 +2574,13 @@ SMT1PR16                          00000000
 SMT1PR17                          00000001
 SMT1PR18                          00000002
 SMT1PR19                          00000003
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 45
+SMT1PR2                           00000002
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 45
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SMT1PR2                           00000002
 SMT1PR20                          00000004
 SMT1PR21                          00000005
 SMT1PR22                          00000006
@@ -2634,13 +2633,13 @@ SMT1TMR2                          00000002
 SMT1TMR20                         00000004
 SMT1TMR21                         00000005
 SMT1TMR22                         00000006
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 46
+SMT1TMR23                         00000007
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 46
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SMT1TMR23                         00000007
 SMT1TMR3                          00000003
 SMT1TMR4                          00000004
 SMT1TMR5                          00000005
@@ -2693,13 +2692,13 @@ SMT2CPRH                          00000DA2
 SMT2CPRL                          00000DA1
 SMT2CPRU                          00000DA3
 SMT2CPRUP                         00000007
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 47
+SMT2CPW                           00000DA4
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 47
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SMT2CPW                           00000DA4
 SMT2CPW0                          00000000
 SMT2CPW1                          00000001
 SMT2CPW10                         00000002
@@ -2752,13 +2751,13 @@ SMT2PR17                          00000001
 SMT2PR18                          00000002
 SMT2PR19                          00000003
 SMT2PR2                           00000002
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 48
+SMT2PR20                          00000004
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 48
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SMT2PR20                          00000004
 SMT2PR21                          00000005
 SMT2PR22                          00000006
 SMT2PR23                          00000007
@@ -2811,13 +2810,13 @@ SMT2TMR20                         00000004
 SMT2TMR21                         00000005
 SMT2TMR22                         00000006
 SMT2TMR23                         00000007
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 49
+SMT2TMR3                          00000003
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 49
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SMT2TMR3                          00000003
 SMT2TMR4                          00000004
 SMT2TMR5                          00000005
 SMT2TMR6                          00000006
@@ -2870,13 +2869,13 @@ SSP1ADD2                          00000002
 SSP1ADD3                          00000003
 SSP1ADD4                          00000004
 SSP1ADD5                          00000005
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 50
+SSP1ADD6                          00000006
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 50
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SSP1ADD6                          00000006
 SSP1ADD7                          00000007
 SSP1BUF                           00000211
 SSP1BUF0                          00000000
@@ -2929,13 +2928,13 @@ SSPM3                             00000003
 SSPMSK                            00000213
 SSPOV                             00000006
 SSPSSPPS                          00000E22
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 51
+SSPSSPPS0                         00000000
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 51
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SSPSSPPS0                         00000000
 SSPSSPPS1                         00000001
 SSPSSPPS2                         00000002
 SSPSSPPS3                         00000003
@@ -2988,13 +2987,13 @@ T1CKIPPS4                         00000004
 T1CKPS0                           00000004
 T1CKPS1                           00000005
 T1CON                             00000018
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 52
+T1GCON                            00000019
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 52
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-T1GCON                            00000019
 T1GGO_NOT_DONE                    00000003
 T1GPOL                            00000006
 T1GPPS                            00000E13
@@ -3047,13 +3046,13 @@ T2TMR                             0000001A
 T3CKIPPS                          00000E19
 T3CKIPPS0                         00000000
 T3CKIPPS1                         00000001
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 53
+T3CKIPPS2                         00000002
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 53
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-T3CKIPPS2                         00000002
 T3CKIPPS3                         00000003
 T3CKIPPS4                         00000004
 T3CKPS0                           00000004
@@ -3106,13 +3105,13 @@ T4PR                              00000414
 T4PSYNC                           00000007
 T4RSEL0                           00000000
 T4RSEL1                           00000001
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 54
+T4RSEL2                           00000002
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 54
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-T4RSEL2                           00000002
 T4RSEL3                           00000003
 T4RST                             00000418
 T4TMR                             00000413
@@ -3165,13 +3164,13 @@ T6OUTPS3                          00000003
 T6PPS                             00000E1E
 T6PPS0                            00000000
 T6PPS1                            00000001
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 55
+T6PPS2                            00000002
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 55
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-T6PPS2                            00000002
 T6PPS3                            00000003
 T6PPS4                            00000004
 T6PR                              0000041B
@@ -3224,13 +3223,13 @@ TMR5GE                            00000007
 TMR5GIE                           00000005
 TMR5GIF                           00000005
 TMR5H                             0000049B
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 56
+TMR5IE                            00000004
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 56
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-TMR5IE                            00000004
 TMR5IF                            00000004
 TMR5L                             0000049A
 TMR5ON                            00000000
@@ -3283,13 +3282,13 @@ TXIF                              00000004
 TXREG                             0000019A
 TXREG1                            0000019A
 TXSTA                             0000019E
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 57
+TXSTA1                            0000019E
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 57
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-TXSTA1                            0000019E
 UA                                00000001
 VALID                             00000000
 VREGCON                           00000197
@@ -3342,13 +3341,13 @@ WINDOW0                           00000000
 WINDOW1                           00000001
 WINDOW2                           00000002
 WPOL                              00000004
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 58
+WPUA                              0000020C
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 58
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-WPUA                              0000020C
 WPUA0                             00000000
 WPUA1                             00000001
 WPUA2                             00000002
@@ -3401,13 +3400,13 @@ Z115                              00000007
 Z116                              00000000
 Z12                               00000002
 Z13                               00000003
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 59
+Z14                               00000004
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 59
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-Z14                               00000004
 Z15                               00000005
 Z16                               00000006
 Z17                               00000007
@@ -3460,13 +3459,13 @@ _FOSC_ECL                         00003FFD
 _FOSC_ECM                         00003FFE
 _FOSC_HS                          00003FFA
 _FOSC_INTOSC                      00003FFC
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 60
+_IDLOC0                           00008000
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 60
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-_IDLOC0                           00008000
 _IDLOC1                           00008001
 _IDLOC2                           00008002
 _IDLOC3                           00008003
@@ -3519,13 +3518,13 @@ _WDTCWS_WDTCWS75                  00003DFF
 _WDTCWS_WDTCWSSW                  00003FFF
 _WDTE_NSLEEP                      00003FDF
 _WDTE_OFF                         00003F9F
-MPASM 5.77                  UTILROUTINES.ASM   7-21-2018  20:38:14         PAGE 61
+_WDTE_ON                          00003FFF
+MPASM 5.77                  UTILROUTINES.ASM   8-13-2018  12:15:54         PAGE 61
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-_WDTE_ON                          00003FFF
 _WDTE_SWDTEN                      00003FBF
 _WRT_ALL                          00003FFC
 _WRT_BOOT                         00003FFE

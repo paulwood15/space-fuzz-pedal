@@ -39,7 +39,7 @@ LSF16	MACRO	NUM, NUMBITS
 	MOV16	SHIFTNUM, NUM
 	ENDM
 	
-;
+;credit for the following macros goes to:
 ; http://www.mcmanis.com/chuck/robotics/projects/pic-16bit.htm
 ;
 ; These are the psuedo "registers" used by the 16 BIT operations

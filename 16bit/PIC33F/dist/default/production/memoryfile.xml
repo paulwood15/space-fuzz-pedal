@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+  <executable name="dist/default/production/PIC33F.production.elf">
+    <memory name="data">
+      <units>bytes</units>
+      <length>256</length>
+      <used>0</used>
+      <free>256</free>
+    </memory>
+    <memory name="program">
+      <units>bytes</units>
+      <length>5352</length>
+      <used>324</used>
+      <free>5028</free>
+    </memory>
+  </executable>
+</project>

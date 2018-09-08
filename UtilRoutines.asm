@@ -20,7 +20,7 @@ UTIL_PRGM   CODE
 ;				     ROUTINES    
 ;************************************************************************************
 RSHIFT16:
-    LOCAL   LOOP
+    LOCAL   RSLOOP
     BCF	    STATUS, C
     BCF	    STATUS, Z
     BANKSEL WREG
