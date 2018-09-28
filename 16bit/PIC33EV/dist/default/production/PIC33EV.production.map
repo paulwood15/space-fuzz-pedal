@@ -17,7 +17,7 @@ Command:
   -Lc:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../support/dsPIC33E/gld \
   -Lc:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../support/dsPIC33F/gld \
   build/default/production/main.o \
-  ..\..\..\..\..\..\..\Program Files (x86)\Microchip\xc16\v1.35\lib\libdsp-coff.a \
+  ..\..\..\..\..\..\..\Program Files (x86)\Microchip\xc16\v1.35\lib\libdsp-elf.a \
   --local-stack \
   --defsym=__MPLAB_BUILD=1 \
   -Tp33EV256GM102.gld.00 \
@@ -83,19 +83,24 @@ xc16-ld 1.35 (A)
 
 section                    address   length (PC units)   length (bytes) (dec)
 -------                    -------   -----------------   --------------------
-.text                        0x200               0x104           0x186  (390)
-.text                        0x304               0x226           0x339  (825)
-.init.delay32                0x52a                0x1c            0x2a  (42)
+.text                        0x200               0x262           0x393  (915)
+.const                       0x462                0x12            0x1b  (27)
+.dinit                       0x474               0x814           0xc1e  (3102)
+.text                        0xc88               0x244           0x366  (870)
+.init.delay32                0xecc                0x1c            0x2a  (42)
 
-                 Total "program" memory used (bytes):          0x4e9  (1257) <1%
+                 Total "program" memory used (bytes):         0x135c  (4956) 1%
 
 
 "data" Memory  [Origin = 0x1000, Length = 0x4000]
 
 section                    address      alignment gaps    total length  (dec)
 -------                    -------      --------------    -------------------
+.nbss                       0x1000                   0             0x2  (2)
+.data                       0x1002                   0           0xc00  (3072)
+.ybss                       0x3000                   0          0x2000  (8192)
 
-                 Total "data" memory used (bytes):              0  (0) 
+                 Total "data" memory used (bytes):         0x2c02  (11266) 68%
 
 
 Dynamic Memory Usage
@@ -103,10 +108,22 @@ Dynamic Memory Usage
 region                     address                      maximum length  (dec)
 ------                     -------                      ---------------------
 heap                             0                                   0  (0)
-stack                       0x1000                              0x4000  (16384)
+stack                       0x1c02                              0x13fe  (5118)
 
-                 Maximum dynamic memory (bytes):         0x4000  (16384)
+                 Maximum dynamic memory (bytes):         0x13fe  (5118)
 
+
+External Symbols in Data Memory (by address):
+
+                    0x1000                  _buffer_index
+                    0x1002                  _twdlFctr32b
+                    0x3000                  _FFT_Buffer
+
+External Symbols in Data Memory (by name):
+
+                    0x3000                  _FFT_Buffer
+                    0x1000                  _buffer_index
+                    0x1002                  _twdlFctr32b
 
 External Symbols in Program Memory (by address):
 
@@ -114,35 +131,37 @@ External Symbols in Program Memory (by address):
                   0x00023c                  __psv_init
                   0x000248                  __data_init
                   0x000248                  __data_init_extended
-                  0x0002fe                  __DefaultInterrupt
-                  0x000304                  _init
-                  0x00037c                  _ADC_init
-                  0x0003da                  _DMA_init
-                  0x000400                  _TMR3_init
-                  0x000410                  _WS2813_write_color
-                  0x0004e4                  _WS2813_write_buffer
-                  0x0004ec                  _WS2813_disp_solid_color
-                  0x000520                  _main
-                  0x00052a                  ___delay32
+                  0x0002fa                  __ADCInterrupt
+                  0x0002fa                  __Interrupt46
+                  0x00045c                  __DefaultInterrupt
+                  0x000c88                  _System_init
+                  0x000cfe                  _ADC_init
+                  0x000d58                  _TMR3_init
+                  0x000d68                  _WS2813_write_color
+                  0x000e3c                  _WS2813_disp_buffer
+                  0x000e70                  _WS2813_disp_solidColor
+                  0x000ea4                  _main
+                  0x000ecc                  ___delay32
                   0x02ab80                  __FSEC.sec
 
 External Symbols in Program Memory (by name):
 
-                  0x00037c                  _ADC_init
-                  0x0003da                  _DMA_init
-                  0x000400                  _TMR3_init
-                  0x0004ec                  _WS2813_disp_solid_color
-                  0x0004e4                  _WS2813_write_buffer
-                  0x000410                  _WS2813_write_color
-                  0x0002fe                  __DefaultInterrupt
+                  0x000cfe                  _ADC_init
+                  0x000c88                  _System_init
+                  0x000d58                  _TMR3_init
+                  0x000e3c                  _WS2813_disp_buffer
+                  0x000e70                  _WS2813_disp_solidColor
+                  0x000d68                  _WS2813_write_color
+                  0x0002fa                  __ADCInterrupt
+                  0x00045c                  __DefaultInterrupt
                   0x02ab80                  __FSEC.sec
-                  0x00052a                  ___delay32
+                  0x0002fa                  __Interrupt46
+                  0x000ecc                  ___delay32
                   0x000248                  __data_init
                   0x000248                  __data_init_extended
                   0x00023c                  __psv_init
                   0x000200                  __resetPRI
-                  0x000304                  _init
-                  0x000520                  _main
+                  0x000ea4                  _main
 
 Memory Configuration
 
@@ -170,7 +189,7 @@ FALTREG          0x02abc4           0x000002
 Linker script and memory map
 
 LOAD build/default/production/main.o
-LOAD ..\..\..\..\..\..\..\Program Files (x86)\Microchip\xc16\v1.35\lib\libdsp-coff.a
+LOAD ..\..\..\..\..\..\..\Program Files (x86)\Microchip\xc16\v1.35\lib\libdsp-elf.a
                     0x0001                  __MPLAB_BUILD = 0x1
 LOAD p33EV256GM102
 LOAD c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\libfx-elf.a
@@ -201,7 +220,7 @@ LOAD c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\libfx-elf.a
                   0x000002          0x2 SHORT 0x0 ((ABSOLUTE (__reset) >> 0x10) & 0x7f)
                   0x000003          0x2 SHORT 0x0
 
-.text             0x000200        0x104
+.text             0x000200        0x262
  *(.init)
  .init            0x000200         0x48 c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(crt0_extendedep.o)
                   0x000200                  __resetPRI
@@ -211,20 +230,21 @@ LOAD c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\libfx-elf.a
                   0x000248                  __data_init
                   0x000248                  __data_init_extended
  *(.user_init)
- .user_init       0x0002fa          0x2 build/default/production/main.o
- .user_init       0x0002fc          0x2 the_terminator
  *(.handle)
  *(.isr*)
- .isr             0x0002fe          0x4 default_isr
-                  0x0002fe                  __DefaultInterrupt
+ .isr.text        0x0002fa        0x162 build/default/production/main.o
+                  0x0002fa                  __Interrupt46
+                  0x0002fa                  __ADCInterrupt
+ .isr             0x00045c          0x4 default_isr
+                  0x00045c                  __DefaultInterrupt
  *(.libc)
  *(.libm)
  *(.libdsp)
  *(.lib*)
  .libpic30_crt_start_mode
-                  0x000302          0x2 c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(crt_start_mode_normalep.Leo)
-                  0x000302                  __crt_start_mode
-                  0x000302                  __crt_start_mode_normal
+                  0x000460          0x2 c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(crt_start_mode_normalep.Leo)
+                  0x000460                  __crt_start_mode
+                  0x000460                  __crt_start_mode_normal
 
 usercode
  *(usercode)
@@ -276,26 +296,26 @@ __FALTREG
 .comment
  *(.comment)
 
-.debug_info       0x000000       0x1ae5
+.debug_info       0x000000       0x1b0c
  *(.debug_info)
- .debug_info      0x000000       0x1ae5 build/default/production/main.o
+ .debug_info      0x000000       0x1b0c build/default/production/main.o
  *(.gnu.linkonce.wi.*)
 
-.debug_abbrev     0x000000        0x133
+.debug_abbrev     0x000000        0x1c3
  *(.debug_abbrev)
- .debug_abbrev    0x000000        0x133 build/default/production/main.o
+ .debug_abbrev    0x000000        0x1c3 build/default/production/main.o
 
-.debug_line       0x000000        0x155
+.debug_line       0x000000        0x1ec
  *(.debug_line)
- .debug_line      0x000000        0x155 build/default/production/main.o
+ .debug_line      0x000000        0x1ec build/default/production/main.o
 
-.debug_frame      0x000000         0xf4
+.debug_frame      0x000000        0x10a
  *(.debug_frame)
- .debug_frame     0x000000         0xf4 build/default/production/main.o
+ .debug_frame     0x000000        0x10a build/default/production/main.o
 
-.debug_str        0x000000         0xb8
+.debug_str        0x000000        0x148
  *(.debug_str)
- .debug_str       0x000000         0xb8 build/default/production/main.o
+ .debug_str       0x000000        0x148 build/default/production/main.o
 
 .debug_loc
  *(.debug_loc)
@@ -304,10 +324,10 @@ __FALTREG
  *(.debug_macinfo)
 
 .debug_pubnames
-                  0x000000         0x97
+                  0x000000         0xd1
  *(.debug_pubnames)
  .debug_pubnames
-                  0x000000         0x97 build/default/production/main.o
+                  0x000000         0xd1 build/default/production/main.o
 
 .debug_ranges
  *(.debug_ranges)
@@ -1631,23 +1651,35 @@ END GROUP
 OUTPUT(dist/default/production/PIC33EV.production.elf elf32-pic30)
 LOAD /CW/_FSEC
 LOAD default_isr
-LOAD the_terminator
+LOAD data_init
 
 .debug_pubtypes
-                  0x000018        0x277
+                  0x000018        0x231
  .debug_pubtypes
-                  0x000018        0x277 build/default/production/main.o
+                  0x000018        0x231 build/default/production/main.o
 
 __c30_signature
-                  0x00028f         0x18
+                  0x000249         0x18
  __c30_signature
-                  0x00028f          0x6 build/default/production/main.o
+                  0x000249          0x6 build/default/production/main.o
  __c30_signature
-                  0x000295          0x6 c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(crt0_extendedep.o)
+                  0x00024f          0x6 c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(crt0_extendedep.o)
  __c30_signature
-                  0x00029b          0x6 c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(data_init_extended.o)
+                  0x000255          0x6 c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(data_init_extended.o)
  __c30_signature
-                  0x0002a1          0x6 c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(delay32ep.Leo)
+                  0x00025b          0x6 c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(delay32ep.Leo)
+
+.nbss               0x1000          0x2
+ .nbss              0x1000          0x2 build/default/production/main.o
+                    0x1000                  _buffer_index
+
+.ybss               0x3000       0x2000
+ .ybss              0x3000       0x2000 build/default/production/main.o
+                    0x3000                  _FFT_Buffer
+
+.data               0x1002        0xc00
+ .data              0x1002        0xc00 build/default/production/main.o
+                    0x1002                  _twdlFctr32b
 
 .config_CTXT2     0x02abc4          0x2
  .config_CTXT2    0x02abc4          0x2 build/default/production/main.o
@@ -1701,17 +1733,27 @@ __c30_signature
 .config_BSLIM     0x02ab90          0x2
  .config_BSLIM    0x02ab90          0x2 build/default/production/main.o
 
-.text             0x000304        0x226
- .text            0x000304        0x226 build/default/production/main.o
-                  0x000304                  _init
-                  0x00037c                  _ADC_init
-                  0x0003da                  _DMA_init
-                  0x000400                  _TMR3_init
-                  0x000410                  _WS2813_write_color
-                  0x0004e4                  _WS2813_write_buffer
-                  0x0004ec                  _WS2813_disp_solid_color
-                  0x000520                  _main
+.ivt._Interrupt46
+                  0x000070          0x2
+ .ivt._Interrupt46
+                  0x000070          0x2 build/default/production/main.o
 
-.init.delay32     0x00052a         0x1c
- .init.delay32    0x00052a         0x1c c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(delay32ep.Leo)
-                  0x00052a                  ___delay32
+.const              0x8462         0x12 load address 0x000462  
+ .const             0x8462         0x12 build/default/production/main.o
+
+.dinit            0x000474        0x814
+ .dinit           0x000474        0x814 data_init
+
+.text             0x000c88        0x244
+ .text            0x000c88        0x244 build/default/production/main.o
+                  0x000c88                  _System_init
+                  0x000cfe                  _ADC_init
+                  0x000d58                  _TMR3_init
+                  0x000d68                  _WS2813_write_color
+                  0x000e3c                  _WS2813_disp_buffer
+                  0x000e70                  _WS2813_disp_solidColor
+                  0x000ea4                  _main
+
+.init.delay32     0x000ecc         0x1c
+ .init.delay32    0x000ecc         0x1c c:/program files (x86)/microchip/xc16/v1.35/bin/bin/../../lib\liblega-pic30-elf.a(delay32ep.Leo)
+                  0x000ecc                  ___delay32
