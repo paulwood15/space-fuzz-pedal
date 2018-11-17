@@ -16,13 +16,21 @@
     #define M 72UL
     #define FRC_DIV 0UL
 
-//TODO: input FCY and calculate constants
 //don't touch
 #define PLL_PRE (N1 - 2UL)
 #define PLL_POST ( (N2 / 2UL) - 1UL )
 #define PLL_DIV (M - 2UL)
 #define FCY ( (FIN * M / (N1 * N2)) / 2 )
+#define FCY_MHZ (FCY / 1000000.0)
 #define TCY (1.0 / FCY)
+
+
+#define WS2813_LAT LATBbits.LATB0
+#define WS2813_PIN_LAT_MASK 0x0001
+
+#define WS2813_TRIS TRISBbits.TRISB0
+#define WS2813_ANSEL ANSELBbits.ANSB0
+#define NUM_LEDS 60
 
 
 // CONFIGURATION BITS
