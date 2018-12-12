@@ -9,7 +9,7 @@
 ;    
 ;    * pin mask		W0
 ;    * 0 low time	W1	
-;    * red data		W3[15:0]
+;    * red data		W3[7:0]
 ;    * green data	W2[15:8]
 ;    * blue data	W2[7:0]
 ;    * 0 high time	W4
