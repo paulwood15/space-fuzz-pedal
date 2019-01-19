@@ -5,15 +5,7 @@
  * Created on August 24, 2018, 1:58 PM
  */
 
-/*
- * TODO: resolve interrupt handler warning, simulate and test ADC reading, write frequency magnitude finder
- * scale fft buffer results, assign values to colors based on frequency, and write
- * function to write data out to WS2813 from buffer.
- */
 
-//cycle frequency = oscillator frequency / 2
-#define FCY                 (_XTAL_FREQ / 2)
-#define FCY_MHZ             (_XTAL_FREQ / 2000000)
 
 #include "mcc_generated_files/mcc.h"
 #include <libpic30.h>
@@ -43,6 +35,10 @@
 #define FFT_LOG2N 10
 #define RESULT_SCALE Q15(0.5)
 
+//taken from code configurator
+#define T_SAMP 0.000024995      // sampling period (seconds) or 24.995 microseonds 
+#define F_SAMP (1 / T_SAMP)     // sampling frequency (Hz)
+
 fractcomplex fft_buffer[FFT_SIZE] __attribute__((space(ymemory), aligned(FFT_SIZE*4)));
 fractcomplex twiddle_factors[FFT_SIZE/2]__attribute__((space(xmemory)));
 uint16_t buffer_index = 0;
@@ -55,7 +51,7 @@ uint8_t temp_index;
 
 void __attribute__((__interrupt__, no_auto_psv))_AD1Interrupt(void) {
     // ADC results are in signed fractional format, Q15, but range from [-1,+0.999], and 
-        // the fft function requires a range of +-0.5 to avoid overflow
+    // the fft function requires a range of +-0.5 to avoid overflow
     
     temp_index = 0;
     temp_buffer[temp_index] = ADC1BUF0;
@@ -96,21 +92,6 @@ void __attribute__((__interrupt__, no_auto_psv))_AD1Interrupt(void) {
     buffer_index++;
     
     
-    //DEBUG: display buffer contexts on LED strip
-//    for (int i = 16; i > 0; i--) {
-//        if (buffer_index < 16) {
-//            WS2813_dispBinary((long long)(fft_buffer[i].real), 16);
-//        }
-//        else {
-//            WS2813_dispBinary((long long)(fft_buffer[buffer_index - i].real), 16);
-//        }
-//        
-//        
-//        //wait for debug continue pin: low -> high -> low -> activated
-//        while (DEBUG_CONTINUE_PORT != 1);   // wait for pin to go high
-//        while (DEBUG_CONTINUE_PORT != 0);   // wait for pin to go low
-//    }
-    
     if (buffer_index == FFT_SIZE) {
         //start FFT computation and display process
         is_buffer_full = true;
@@ -122,55 +103,11 @@ void __attribute__((__interrupt__, no_auto_psv))_AD1Interrupt(void) {
 }
 
 
-//void System_init(void){
-///*DEBUG*/
-//    //debug LEDs
-//    TEST_LED_ANSEL = 0;
-//    TEST_LED_TRIS = 0;
-//    TEST_LED = 0;
-//    TEST_LED2_ANSEL = 0;
-//    TEST_LED2_TRIS = 0;
-//    TEST_LED2 = 0;
-//    TEST_LED3_TRIS = 0;
-//    TEST_LED3 = 0;
-//    
-//    //debug inputs
-//    DEBUG_CONTINUE_TRIS = 1;
-//    
-//    
-///*oscillator configuration*/
-//    //setup PLL parameters
-//    CLKDIVbits.FRCDIV = FRC_DIV;
-//    CLKDIVbits.PLLPRE = PLL_PRE;
-//    CLKDIVbits.PLLPOST = PLL_POST;
-//    PLLFBD = PLL_DIV;
-//    
-//    //initiate clock switch to FRC w/ PLL 
-//    __builtin_write_OSCCONH(0x01);
-//    __builtin_write_OSCCONL(OSCCON | 0x01);
-//    
-//    //wait for clock switch to occur
-//    while (OSCCONbits.COSC != 0b001);
-//    TEST_LED = 1;
-//    
-//    //wait for PLL lock
-//    while (OSCCONbits.LOCK != 1);
-//    TEST_LED2 = 1;
-//    
-//    //WS2813 pin-out configuration
-//    WS2813_TRIS = 0;
-//    WS2813_LAT = 0;
-//    WS2813_ANSEL = 0;
-//    
-//    //WS2813 timing in clock cycles
-//    calc_WS2813TimingClockCycles();
-//   
-//    return;
-//}
-
-
 int main(void) {
     fractional fft_results[FFT_SIZE];
+    fractional fft_maxValue;
+    int16_t fft_maxValue_bin;
+    uint16_t max_frequency;
     
     SYSTEM_Initialize();
     WS2813_Initialize(FCY_MHZ);
@@ -180,6 +117,9 @@ int main(void) {
     
     //turn on ADC
     ADC1_ON();
+    ADC1_PAUSE();       // need to wait for ADC to stablize
+    __delay_us(20);     // stablization delay
+    ADC1_RESUME();
     ADC1_Interrupt_Enable();
     
     //turn on TMR3
@@ -194,6 +134,24 @@ int main(void) {
         BitReverseComplex(FFT_LOG2N, &fft_buffer[0]);
         SquareMagnitudeCplx(FFT_SIZE, &fft_buffer[0], &fft_results[0]);
         
+        //throw away first result because it is usually ridiculously large
+        fft_results[0] = 0;
+        
+        //get max fft value and bin location
+        fft_maxValue = VectorMax(FFT_SIZE / 2, &fft_results[0], &fft_maxValue_bin);
+        
+        //compute frequency at bin in Hz
+        max_frequency = fft_maxValue_bin * (F_SAMP / FFT_SIZE);
+        
+        const uint16_t threshold = 1000;        // Hz 
+        if (max_frequency > threshold) {
+            WS2813_write_solidFrame(COLOR_BLUE);
+        }
+        else {
+            WS2813_write_solidFrame(COLOR_RED);
+        }
+        
+        
         //clean up for next FFT computation
         buffer_index = 0;
         is_buffer_full = false;
@@ -203,15 +161,3 @@ int main(void) {
     
     return 1;
 }
-
-
-//    AD1CON1bits.SAMP = 1; // Start sampling
-//    __delay_us(10); // Wait for sampling time (10us)
-//    AD1CON1bits.SAMP = 0; // Start the conversion
-//    while (!AD1CON1bits.DONE); // Wait for the conversion to complete
-//    ADCValue = ADC1BUF0; // Read the conversion result      
-//    
-//    while (1) {
-//        ADCValue = ADCValue;
-//    }
-    

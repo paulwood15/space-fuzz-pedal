@@ -1,5 +1,4 @@
 
-
 #include "WS2813.h"
 
 uint_fast16_t C0L;                      // WS2813 0-low clock cycles
@@ -66,6 +65,14 @@ void WS2813_Initialize(uint16_t fcy_mhz) {
     WS2813_calcTimingClockCycles(fcy_mhz);
 }
 
-void WS2813_writeColor(uint32_t color) {
+void WS2813_write_color(uint32_t color) {
     WS2813_writeout(WS2813_PIN_LAT_MASK, color, C0L, C0H, C1L, C1H);
+}
+
+void WS2813_write_solidFrame(uint32_t color) {
+    for (uint8_t i = 0; i < NUM_LEDS; i++) {
+        WS2813_write_color(color);
+    }
+    
+    __delay_us(TRES);
 }

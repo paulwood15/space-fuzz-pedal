@@ -46,6 +46,11 @@
 #define	CLOCK_H
 
 #define _XTAL_FREQ  138187500UL
+
+//cycle frequency = oscillator frequency / 2
+#define FCY                 (_XTAL_FREQ / 2)
+#define FCY_MHZ             (_XTAL_FREQ / 2000000)
+
 /**
  * @Param
     none

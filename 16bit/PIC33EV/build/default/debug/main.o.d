@@ -11,4 +11,5 @@ mcc_generated_files/pin_manager.h  \
 mcc_generated_files/interrupt_manager.h  \
  mcc_generated_files/../adc1.h  \
 mcc_generated_files/tmr3.h  \
-WS2813.h 
+WS2813.h  \
+ mcc_generated_files/clock.h 
