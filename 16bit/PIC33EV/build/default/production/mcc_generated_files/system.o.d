@@ -6,5 +6,5 @@ mcc_generated_files/system.h  \
  mcc_generated_files/system_types.h  \
  mcc_generated_files/interrupt_manager.h  \
 mcc_generated_files/traps.h  \
- mcc_generated_files/adc1.h  \
+ mcc_generated_files/../adc1.h  \
 mcc_generated_files/tmr3.h 

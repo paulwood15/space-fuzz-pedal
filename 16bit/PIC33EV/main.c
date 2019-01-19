@@ -39,40 +39,70 @@
 #define LAT_bit 4;
 
 
-#define FFT_SIZE 2048
-volatile fractcomplex FFT_Buffer[FFT_SIZE] __attribute__((space(ymemory)));
-int buffer_index = 0;
+#define FFT_SIZE 1024
+#define FFT_LOG2N 10
+#define RESULT_SCALE Q15(0.5)
+
+fractcomplex fft_buffer[FFT_SIZE] __attribute__((space(ymemory), aligned(FFT_SIZE*4)));
+fractcomplex twiddle_factors[FFT_SIZE/2]__attribute__((space(xmemory)));
+uint16_t buffer_index = 0;
+bool is_buffer_full = false;
+
+#define TEMP_BUF_SIZE 16
+fractional temp_buffer[TEMP_BUF_SIZE];
+uint8_t temp_index;
 
 
-//TODO: Create color enums
-//TODO: make some defines into consts
-
-//void __attribute__((__interrupt__, no_auto_psv))_AD1Interrupt(void) {
-//    FFT_Buffer[buffer_index].real   = Q15(ADC1BUF0); 
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUF1);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUF2);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUF3);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUF4);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUF5);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUF6);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUF7);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUF8);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUF9);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUFA);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUFB);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUFC);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUFD);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUFE);
-//    FFT_Buffer[++buffer_index].real = Q15(ADC1BUFF);
-//    buffer_index++;
-//    
-//    //DEBUG: display buffer contexts on LED strip
+void __attribute__((__interrupt__, no_auto_psv))_AD1Interrupt(void) {
+    // ADC results are in signed fractional format, Q15, but range from [-1,+0.999], and 
+        // the fft function requires a range of +-0.5 to avoid overflow
+    
+    temp_index = 0;
+    temp_buffer[temp_index] = ADC1BUF0;
+    temp_buffer[++temp_index] = ADC1BUF1;
+    temp_buffer[++temp_index] = ADC1BUF2;
+    temp_buffer[++temp_index] = ADC1BUF3;
+    temp_buffer[++temp_index] = ADC1BUF4;
+    temp_buffer[++temp_index] = ADC1BUF5;
+    temp_buffer[++temp_index] = ADC1BUF6;
+    temp_buffer[++temp_index] = ADC1BUF7;
+    temp_buffer[++temp_index] = ADC1BUF8;
+    temp_buffer[++temp_index] = ADC1BUF9;
+    temp_buffer[++temp_index] = ADC1BUFA;
+    temp_buffer[++temp_index] = ADC1BUFB;
+    temp_buffer[++temp_index] = ADC1BUFC;
+    temp_buffer[++temp_index] = ADC1BUFD;
+    temp_buffer[++temp_index] = ADC1BUFE;
+    temp_buffer[++temp_index] = ADC1BUFF;
+    
+    VectorScale(TEMP_BUF_SIZE, &temp_buffer[0], &temp_buffer[0], RESULT_SCALE);
+    
+    fft_buffer[buffer_index].real = temp_buffer[0];
+    fft_buffer[++buffer_index].real = temp_buffer[1];
+    fft_buffer[++buffer_index].real = temp_buffer[2];
+    fft_buffer[++buffer_index].real = temp_buffer[3];
+    fft_buffer[++buffer_index].real = temp_buffer[4];
+    fft_buffer[++buffer_index].real = temp_buffer[5];
+    fft_buffer[++buffer_index].real = temp_buffer[6];
+    fft_buffer[++buffer_index].real = temp_buffer[7];
+    fft_buffer[++buffer_index].real = temp_buffer[8];
+    fft_buffer[++buffer_index].real = temp_buffer[9];
+    fft_buffer[++buffer_index].real = temp_buffer[10];
+    fft_buffer[++buffer_index].real = temp_buffer[11];
+    fft_buffer[++buffer_index].real = temp_buffer[12];
+    fft_buffer[++buffer_index].real = temp_buffer[13];
+    fft_buffer[++buffer_index].real = temp_buffer[14];
+    fft_buffer[++buffer_index].real = temp_buffer[15];
+    buffer_index++;
+    
+    
+    //DEBUG: display buffer contexts on LED strip
 //    for (int i = 16; i > 0; i--) {
 //        if (buffer_index < 16) {
-//            WS2813_dispBinary((long long)(FFT_Buffer[i].real), 16);
+//            WS2813_dispBinary((long long)(fft_buffer[i].real), 16);
 //        }
 //        else {
-//            WS2813_dispBinary((long long)(FFT_Buffer[buffer_index - i].real), 16);
+//            WS2813_dispBinary((long long)(fft_buffer[buffer_index - i].real), 16);
 //        }
 //        
 //        
@@ -80,11 +110,16 @@ int buffer_index = 0;
 //        while (DEBUG_CONTINUE_PORT != 1);   // wait for pin to go high
 //        while (DEBUG_CONTINUE_PORT != 0);   // wait for pin to go low
 //    }
-//    
-//    //TODO: tell main when to display information
-//    
-//     IFS0bits.AD1IF = 0;
-//}
+    
+    if (buffer_index == FFT_SIZE) {
+        //start FFT computation and display process
+        is_buffer_full = true;
+        ADC1_PAUSE();
+        ADC1_Interrupt_Disable();
+    }
+    
+     IFS0bits.AD1IF = 0;
+}
 
 
 //void System_init(void){
@@ -135,20 +170,48 @@ int buffer_index = 0;
 
 
 int main(void) {
-    //volatile long *FFT_Results;
-    
+    fractional fft_results[FFT_SIZE];
     
     SYSTEM_Initialize();
     WS2813_Initialize(FCY_MHZ);
     
-    //turn on TMR3
-    T3CONbits.TON = 1;
+    //fft init
+    TwidFactorInit(FFT_LOG2N, &twiddle_factors[0], 0);
+    
     //turn on ADC
-    AD1CON1bits.ADON = 1;
+    ADC1_ON();
+    ADC1_Interrupt_Enable();
     
+    //turn on TMR3
+    TMR3_Start();
     
+    //main loop
     while (1) {
+        while (!is_buffer_full);        // wait for buffer to fill up
+        //TODO: vector scale (being done in interrupt)(x), fft compute (x), bit reversal (x), complex magnitude (x), vectorMax ( )
+        
+        FFTComplexIP(FFT_LOG2N, &fft_buffer[0], &twiddle_factors[0], COEFFS_IN_DATA);    
+        BitReverseComplex(FFT_LOG2N, &fft_buffer[0]);
+        SquareMagnitudeCplx(FFT_SIZE, &fft_buffer[0], &fft_results[0]);
+        
+        //clean up for next FFT computation
+        buffer_index = 0;
+        is_buffer_full = false;
+        ADC1_Interrupt_Enable();
+        ADC1_RESUME();
     }
     
     return 1;
 }
+
+
+//    AD1CON1bits.SAMP = 1; // Start sampling
+//    __delay_us(10); // Wait for sampling time (10us)
+//    AD1CON1bits.SAMP = 0; // Start the conversion
+//    while (!AD1CON1bits.DONE); // Wait for the conversion to complete
+//    ADCValue = ADC1BUF0; // Read the conversion result      
+//    
+//    while (1) {
+//        ADCValue = ADCValue;
+//    }
+    

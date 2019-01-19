@@ -47,16 +47,16 @@
 #include "system.h"
 #include "stdint.h"
 #include "system_types.h"
-#include "tmr3.h"
 #include "interrupt_manager.h"
 #include "traps.h"
-#include "adc1.h"
+#include "../adc1.h"
+#include "tmr3.h"
 
 void SYSTEM_Initialize(void)
 {
     PIN_MANAGER_Initialize();
-    INTERRUPT_Initialize();
     CLOCK_Initialize();
+    INTERRUPT_Initialize();
     ADC1_Initialize();
     TMR3_Initialize();
     INTERRUPT_GlobalEnable();

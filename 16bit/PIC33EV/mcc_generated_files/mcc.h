@@ -55,7 +55,7 @@
 #include "watchdog.h"
 #include "interrupt_manager.h"
 //#include "traps.h"
-#include "adc1.h"
+#include "../adc1.h"
 #include "tmr3.h"
 #include "reset.h"
 
