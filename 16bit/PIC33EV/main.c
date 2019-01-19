@@ -73,6 +73,7 @@ void __attribute__((__interrupt__, no_auto_psv))_AD1Interrupt(void) {
     
     VectorScale(TEMP_BUF_SIZE, &temp_buffer[0], &temp_buffer[0], RESULT_SCALE);
     
+    //not done in loop to save instruction cycles 
     fft_buffer[buffer_index].real = temp_buffer[0];
     fft_buffer[++buffer_index].real = temp_buffer[1];
     fft_buffer[++buffer_index].real = temp_buffer[2];
@@ -100,6 +101,56 @@ void __attribute__((__interrupt__, no_auto_psv))_AD1Interrupt(void) {
     }
     
      IFS0bits.AD1IF = 0;
+}
+
+uint32_t freq_to_color(uint16_t freq) {
+    uint16_t temp;       
+    
+    //frequencies
+    const uint16_t f_a = 1000;     // (Hz) red to green start transition
+    const uint16_t f_b = 2000;     // (Hz) red to green end transition
+    const uint16_t f_c = 3000;     // (Hz) green to blue start transition
+    const uint16_t f_d = 4000;     // (Hz) green to blue end transition
+    const uint16_t f_e = 5000;     // (Hz) blue to purple start transition
+    const uint16_t f_f = 6000;     // (Hz) blue to purple end transition
+    
+    //slopes
+    const float ab_slope = 0xFF / (float)(f_b - f_a);
+    const float cd_slope = 0xFF / (float)(f_d - f_c);
+    const float ef_slope = 0xFF / (float)(f_f - f_e);
+    //const float 
+    
+    /* Piecewise function */
+    //red
+    if (freq < f_a) {
+        return 0x00FF0000;
+    }
+    //red to green
+    else if (freq < f_b) {
+        temp = ab_slope * (freq - f_a);
+        return ((uint32_t)(0xFF - temp) << 16) | (temp << 8);
+    }
+    //green
+    else if (freq < f_c) {
+        return 0x0000FF00;
+    }
+    //green to blue
+    else if (freq < f_d) {
+        temp = cd_slope * (freq - f_c);
+        return ((uint32_t)(0xFF - temp) << 8) | temp;
+    }
+    //blue
+    else if (freq < f_e) {
+        return 0x000000FF;
+    }
+    else if (freq < f_f){
+        temp = ef_slope * (freq - f_e);
+        return ((uint32_t)temp << 16) | 0xFF;
+    }
+    else {
+        return 0x00FF00FF;
+    }
+    
 }
 
 
@@ -143,14 +194,15 @@ int main(void) {
         //compute frequency at bin in Hz
         max_frequency = fft_maxValue_bin * (F_SAMP / FFT_SIZE);
         
-        const uint16_t threshold = 1000;        // Hz 
-        if (max_frequency > threshold) {
-            WS2813_write_solidFrame(COLOR_BLUE);
-        }
-        else {
-            WS2813_write_solidFrame(COLOR_RED);
-        }
+//        const uint16_t threshold = 1000;        // Hz 
+//        if (max_frequency > threshold) {
+//            WS2813_write_solidFrame(COLOR_BLUE);
+//        }
+//        else {
+//            WS2813_write_solidFrame(COLOR_RED);
+//        }
         
+        WS2813_write_solidFrame(freq_to_color(max_frequency));
         
         //clean up for next FFT computation
         buffer_index = 0;

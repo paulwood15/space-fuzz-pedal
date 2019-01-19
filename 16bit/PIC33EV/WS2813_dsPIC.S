@@ -18,7 +18,7 @@
 ;    *
 ;    */
     
-    ;//TODO: write remaining routine for LED data output and timing 
+    
     
     .macro BIT_LOW
 	ior LATB		;// sets bit
